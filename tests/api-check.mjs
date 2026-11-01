@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+const base=process.env.DAILY_TEST_ORIGIN||'http://127.0.0.1:8797';
+if(!['localhost','127.0.0.1'].includes(new URL(base).hostname))throw Error('API check only runs on loopback test origins');
+const anon=await fetch(base+'/api/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"changes":[]}'});assert.equal(anon.status,401);
+const login=await fetch(base+'/signin-with-chatgpt?return_to=%2F',{redirect:'manual'});const cookie=login.headers.getSetCookie().map(s=>s.split(';')[0]).join('; ');assert.ok(cookie);
+const post=changes=>fetch(base+'/api/sync',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json',Origin:base},body:JSON.stringify({changes})});
+const id='task_apicheck_'+Date.now(),c=(value,clock)=>({value,clock,actor:'test-api'});
+let r=await post([{id,kind:'task',fields:{title:c('Synthetic API task',1),date:c('2026-11-02',1),deleted:c(false,1)}}]);assert.equal(r.status,200);
+const responses=await Promise.all([post([{id,kind:'task',fields:{title:c('Updated',3)}}]),post([{id,kind:'task',fields:{date:c('2026-11-04',4)}}]),post([{id,kind:'task',fields:{important:c(true,5)}}])]);assert.ok(responses.every(r=>r.status===200));
+r=await post([]);const record=(await r.json()).records.find(r=>r.id===id);assert.equal(record.fields.title.value,'Updated');assert.equal(record.fields.date.value,'2026-11-04');assert.equal(record.fields.important.value,true);
+assert.equal((await post([{id,kind:'task',fields:{unexpected:c(true,10)}}])).status,400);
+const badOrigin=await fetch(base+'/api/sync',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json',Origin:'https://wrong.example'},body:'{"changes":[]}'});assert.equal(badOrigin.status,403);
+await post([{id,kind:'task',fields:{deleted:c(true,20)}}]);
+console.log('PASS: anonymous rejected, authenticated persistence, concurrent field merge, schema validation, cross-origin writes rejected. Local synthetic record tombstoned.');
