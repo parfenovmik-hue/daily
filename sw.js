@@ -1,0 +1,6 @@
+const CACHE='daily-pages-0.2.0-r1';
+const SHELL=['./','./daily.js','./daily.css','./model.js','./store.js','./icons.js','./pickers.js','./manifest.webmanifest','./icon.svg','./apple-touch-icon.png','./icon-192.png','./icon-512.png'];
+const urls=SHELL.map(p=>new URL(p,self.location.href).href);
+self.addEventListener('install',e=>e.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(urls.map(u=>new Request(u,{cache:'reload'})));await self.skipWaiting();})()));
+self.addEventListener('activate',e=>e.waitUntil((async()=>{for(const k of await caches.keys())if(k.startsWith('daily-pages-')&&k!==CACHE)await caches.delete(k);await self.clients.claim();})()));
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==self.location.origin)return;if(e.request.mode==='navigate'){e.respondWith(fetch(e.request).catch(()=>caches.open(CACHE).then(c=>c.match(urls[0]))));return;}const u=new URL(e.request.url);u.search='';if(urls.includes(u.href))e.respondWith(caches.open(CACHE).then(async c=>await c.match(u.href)||fetch(e.request)));});
