@@ -256,3 +256,20 @@
 #daily .wish{border:1px solid var(--line);border-radius:18px;padding:14px;gap:14px;margin-top:14px;background:var(--panel)}#daily .wish-actions button,#daily .wish-actions a{min-height:38px;display:inline-flex;align-items:center;padding:7px 10px;border-radius:10px;background:var(--soft);color:var(--ink);text-decoration:none;font-size:12px}#daily .wish h3{font-size:16px;line-height:1.4}#daily .wish-image{border-radius:12px;overflow:hidden}
 #daily .report-number{margin-top:24px;font-size:64px;letter-spacing:-3px;font-weight:600}#daily .comparison{display:inline-block;background:var(--soft);padding:6px 10px;border-radius:9px;font-size:12px;margin-top:12px}#daily .settings-list button{display:flex;align-items:center;gap:10px;min-height:55px}#daily .calendar button{border-radius:12px;min-height:54px}#daily .calendar .selected{background:var(--petrol);color:#fff}#daily .transfer-actions button{background:var(--panel);border-color:var(--line);border-radius:13px;min-height:58px}
 @media(max-width:360px){#daily .calendar-link{font-size:12px;padding:8px}#daily .folio h2{font-size:26px}#daily .inline-actions .action-tile{padding:10px;font-size:13px}}
+/* Header: one shared two-row grid, never independently stacked columns. */
+#daily .page-heading{display:grid;grid-template-columns:minmax(0,1fr) max-content;grid-template-rows:minmax(44px,auto) auto;column-gap:12px;row-gap:6px;align-items:center}
+#daily .page-heading .screen-title{grid-area:1/1;margin:0;font:650 29px/1.15 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:-.8px;color:var(--ink);min-width:0;overflow-wrap:anywhere;text-wrap:pretty}
+#daily .page-heading .calendar-link{grid-area:1/2;justify-self:end;margin:0;min-height:40px}
+#daily .page-heading .sub{grid-area:2/1;margin:0;color:#707780;font-size:12px;line-height:20px;min-width:0}
+#daily .page-heading .sync-chip{grid-area:2/2;justify-self:end;align-self:start;margin:0;padding:0;min-height:20px;font-size:12px;line-height:20px;color:#707780;max-width:160px}
+#daily .page-heading .sync-chip.error{color:#a24655}
+#daily .page-heading .sub:empty{visibility:hidden}
+#daily .week-clip{margin-top:10px}
+#daily button,#daily a,#daily input,#daily textarea,#daily select{touch-action:manipulation;-webkit-tap-highlight-color:#19797118}
+#daily button:focus-visible,#daily a:focus-visible,#daily input:focus-visible,#daily textarea:focus-visible,#daily select:focus-visible{outline:2px solid var(--petrol);outline-offset:3px}
+#daily button:active:not(:disabled){filter:brightness(.94)}
+#daily .picker-panel{overscroll-behavior:contain}
+#daily .row .time,#daily .report-number,#daily .bar small,#daily .goal .heading>span{font-variant-numeric:tabular-nums}
+#daily .wish>div{min-width:0;overflow-wrap:anywhere}
+#daily .wish-image img{width:100%;height:100%;object-fit:contain}
+@media(max-width:360px){#daily .page-heading{column-gap:8px}#daily .page-heading .screen-title{font-size:26px}#daily .page-heading .calendar-link{font-size:12px;padding:8px}#daily .page-heading .sub,#daily .page-heading .sync-chip{font-size:11px}}
