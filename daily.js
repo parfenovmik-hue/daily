@@ -1,7 +1,7 @@
 import {VERSION,dayKey,addDays,weekStart,dayView,goalProgress,statistics,periodRange,effectiveProject,unpack,validRecord} from './model.js';
 import {DailyStore} from './store.js';
 import {icon} from './icons.js';
-import {readNotesOnDevice,planNotesImport} from './notes-import.js';
+import {readNotesOnDevice,planNotesImport,selectNotesTasks} from './notes-import.js';
 import {PageSlide} from './motion.js';
 import {openPicker} from './pickers.js';
 import {isProjectImage,prepareProjectImage} from './project-image.js';
@@ -17,7 +17,7 @@ async function start(){
  const prefKey='daily-preferences-'+account;
  let prefs={};try{prefs=JSON.parse(localStorage.getItem(prefKey)||'{}');}catch{}
  const ui={screen:'day',followToday:true,offlineReady:false,day:dayKey(),week:weekStart(dayKey()),month:dayKey().slice(0,7),projectId:'',goalId:'',period:'week',reportDay:dayKey(),shoppingCategory:prefs.shoppingCategory||'home',showWishDone:false,sheet:null,undo:[],actionId:'',sync:navigator.onLine?'connecting':'offline',syncError:'',toast:null,history:[],lastSwipe:0,animating:false};
- let importPlan=null;
+ let importPlan=null,importSource=null;
  let syncing=false,syncTimer,retryTimer,retry=3000,toastTimer,shakeEnabled=false,lastShake=0,shakePeaks=0,lastPeak=0,lastAccel=null;
  const $=(q,el=root)=>el.querySelector(q);
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -141,7 +141,7 @@ async function start(){
  async function enrichWish(id){if(localMode){if(get(id)){store.patch(id,'wish',{status:'manual'});await store.persist();if(!ui.sheet)render();}return;}const w=get(id);if(!w?.url)return;if(!navigator.onLine)return;try{const r=await fetch('/api/product',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:w.url}),signal:AbortSignal.timeout(15000)}),data=await r.json(),current=get(id);if(!current||current.url!==w.url)return;if(!r.ok)throw Error(data.error);const patch={status:'ready'};for(const key of['productTitle','image','price','currency'])if(data[key]&&(!current[key]||key==='currency'))patch[key]=data[key];store.patch(id,'wish',patch);await store.persist();if(!ui.sheet&&!isTyping())render();scheduleSync();}catch{if(get(id)){store.patch(id,'wish',{status:'manual'});await store.persist();if(!ui.sheet&&!isTyping())render();scheduleSync();}}}
  async function remove(id){const e=get(id);if(!e)return;closeSheet(false);const changes=[{id,kind:e.kind,patch:{deleted:true}}];if(e.kind==='project'){for(const x of all().filter(x=>['task','goal'].includes(x.kind)&&x.projectId===id))changes.push({id:x.id,kind:x.kind,patch:{projectId:''}});}
  if(e.kind==='goal'){for(const t of list('task').filter(t=>t.goalId===id))changes.push({id:t.id,kind:'task',patch:{goalId:'',projectId:effectiveProject(t,all())}});}await perform(changes,e.kind==='goal'?'Блок удалён; задачи сохранены':'Удалено');if(e.kind==='project'||ui.screen==='goal'&&ui.goalId===id)visit('projects');}
- async function showNotesImport(source){try{importPlan=await planNotesImport(source,store.entities(undefined,true));sheet('Задачи из Notes',`<p class="transfer-title">На 2 ноября: ${importPlan.today}<br>С прошлых дней в очередь: ${importPlan.queue}</p><p class="quiet">${importPlan.skipped?'Уже перенесено: '+importPlan.skipped+'. ':''}Оригиналы Notes останутся без изменений. До переноса сохраним копию текущих данных Daily на устройстве.</p>${importPlan.queue!==27?'<p class="sheet-error">Ожидалось 27 задач с прошлых дней. Количество не совпадает — проверь свежесть копии Notes.</p>':''}${button('notes-import-apply','Перенести '+importPlan.changes.length+' задач',`class="primary" ${!importPlan.changes.length||importPlan.queue!==27?'disabled':''}`)}`);}catch(error){notify(error.message);}}
+ async function showNotesImport(source){try{const selected=selectNotesTasks(source);importSource={app:'notespanel-transfer',tasks:[...selected.today,...selected.queue]};importPlan=await planNotesImport(source,store.entities(undefined,true));sheet('Задачи из Notes',`<p class="transfer-title">На 2 ноября: ${importPlan.today}<br>С прошлых дней в очередь: ${importPlan.queue}</p><p class="quiet">${importPlan.skipped?'Уже перенесено: '+importPlan.skipped+'. ':''}Оригиналы Notes останутся без изменений. До переноса сохраним копию текущих данных Daily на устройстве.</p>${importPlan.queue!==27?'<p class="sheet-error">Ожидалось 27 задач с прошлых дней. Количество не совпадает — проверь свежесть копии Notes.</p>':''}${button('notes-import-export','Скачать задачи для другого устройства','class="secondary section"')}${button('notes-import-apply','Перенести '+importPlan.changes.length+' задач',`class="primary" ${!importPlan.changes.length||importPlan.queue!==27?'disabled':''}`)}`);}catch(error){notify(error.message);}}
  function importHelp(){sheet('Перенести из Notes',`<p class="transfer-title">Задачи на 2 ноября → на сегодня.<br>27 задач из прошлых дней → в очередь.</p><p class="quiet">Попробуем прочитать Notes на этом устройстве. Если приложение хранит данные отдельно, выбери его резервную JSON-копию.</p>${button('notes-import-device','Прочитать Notes на устройстве','class="primary"')}<label class="upload-button section">Выбрать JSON-копию Notes<input type="file" accept="application/json,.json" data-notes-import aria-label="Выбрать резервную копию Notes"></label>`);}
  function backup(){const data={app:'daily',version:VERSION,exportedAt:new Date().toISOString(),records:Object.values(store.records)},blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='daily-'+dayKey()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
  let pan=null;
@@ -170,6 +170,7 @@ async function start(){
   const b=e.target.closest('[data-action]');if(!b)return;const action=b.dataset.action,id=b.dataset.id;
   try{
    switch(action){
+    case'notes-import-export':{if(!importSource)return;const blob=new Blob([JSON.stringify(importSource,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='daily-notes-transfer-2026-11-02.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);break;}
     case'notes-import':importHelp();break;
     case'notes-import-device':try{await showNotesImport(await readNotesOnDevice());}catch(error){notify(error.message);}break;
     case'notes-import-apply':{if(!importPlan||importPlan.queue!==27)return;const backupKey='before-notes-import-'+account+'-'+Date.now();await store.adapter.write(backupKey,{records:structuredClone(store.records),dirty:structuredClone(store.dirty),actor:store.actor,clock:store.clock,sequence:store.sequence});const plan=importPlan;importPlan=null;closeSheet(false);await perform(plan.changes,'Перенесено задач: '+plan.changes.length);visit('day',{day:'2026-11-02',week:weekStart('2026-11-02')});break;}
