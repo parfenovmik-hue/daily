@@ -277,3 +277,13 @@ html.sheet-open{overflow:hidden}
 
 #daily.reorder-active,#daily.reorder-active *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
 #daily input:not([type=checkbox]),#daily textarea,#daily [contenteditable=true]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+#daily .day-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px}
+#daily .day-toolbar>span:first-child{font-size:12px;white-space:nowrap}
+#daily .day-toolbar .return-today{justify-self:center}
+#daily .toolbar .queue-link{justify-self:end;display:flex;align-items:center;gap:5px;font-size:11px}
+#daily .queue-tray{position:relative;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px}
+#daily .queue-tray b{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:8px;line-height:10px;font-weight:600;background:var(--paper);padding:0 1px}
+#daily .queue-heading{display:flex;align-items:center;gap:7px}
+#daily .shopping-explanation{margin-top:8px}
+#daily .planned-block{touch-action:pan-y}
+#daily .drag-ghost.planned-block{margin:0}
