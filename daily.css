@@ -182,3 +182,26 @@
 
 /* Keep the composer focus ring inside its scrollable sheet. */
 #daily #entry-form>textarea:focus{outline:none;border-color:var(--petrol);box-shadow:none}
+#daily .week{position:relative}
+#daily .week button{position:relative;z-index:1}
+#daily .week-marker{position:absolute;background:var(--petrol);border-radius:12px;pointer-events:none;z-index:0}
+#daily .week.selection-moving .selected{background:transparent}
+#daily .transfer-days{gap:6px;margin-top:8px}
+#daily .transfer-days button{display:flex;align-items:center;justify-content:space-between;gap:5px;min-height:44px;padding:8px;font-size:12px;white-space:nowrap}
+#daily .transfer-days small{display:inline;font-size:11px;margin:0}
+#daily .transfer-days .transfer-queue{min-height:40px}
+#daily .composer-picker{display:flex;flex-direction:column;overflow:hidden}
+#daily .composer-picker .picker-head{flex:none}
+#daily .composer-picker .picker-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;flex:1}
+@media(max-width:360px){#daily .transfer-days{grid-template-columns:1fr}}
+
+#daily .composer-picker .time-content{display:flex;flex-direction:column;gap:8px;overflow:hidden}
+#daily .time-content>.time-display{height:48px;min-height:48px;margin:0;padding:0;flex:none;color:var(--petrol)}
+#daily .time-content .picker-shortcuts{flex:none}
+#daily .time-content .picker-shortcuts button{min-height:36px}
+#daily .time-content .time-keypad{flex:1;min-height:128px;margin:0;grid-template-rows:repeat(4,minmax(32px,1fr));gap:5px}
+#daily .time-content .time-keypad button{height:auto;min-height:32px}
+#daily .time-content .sheet-error:empty{display:none}
+#daily .time-actions{display:grid;grid-template-columns:1fr 2fr;gap:8px;flex:none}
+#daily .time-actions button{min-height:44px;margin:0;font-size:13px}
+#daily .time-actions>button:first-child{color:var(--quiet)}
