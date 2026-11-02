@@ -6,23 +6,23 @@ export function mountDateCalendar(body,{value='',counts={},onSelect}){
 }
 function localDay(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 // App-owned pickers never invoke native date/time selectors.
-export function openPicker(root,{kind,value='',items=[],counts={},onSelect}){
+export function openPicker(root,{kind,value='',items=[],counts={},height,onSelect}){
  const previous=document.activeElement;previous?.blur();const overlay=document.createElement('div');overlay.className='picker-overlay';
  overlay.innerHTML='<section class="picker-panel" role="dialog" aria-modal="true"><div class="picker-head"><h3></h3><button type="button" aria-label="Назад">‹</button></div><div class="picker-content"></div></section>';root.append(overlay);
- const panel=overlay.firstElementChild,body=overlay.querySelector('.picker-content');
+ const panel=overlay.firstElementChild,body=overlay.querySelector('.picker-content');if(height){panel.classList.add('composer-picker');panel.style.height=height+'px';}
  const close=()=>{document.removeEventListener('keydown',keys,true);overlay.remove();if(previous?.tagName==='BUTTON')previous.focus({preventScroll:true});};
  const keys=e=>{if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}if(e.key==='Tab'){const focus=[...panel.querySelectorAll('button')].filter(x=>!x.disabled);if(e.shiftKey&&document.activeElement===focus[0]){e.preventDefault();focus.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===focus.at(-1)){e.preventDefault();focus[0]?.focus();}}};
  document.addEventListener('keydown',keys,true);const finish=v=>{onSelect(v);close();};overlay.querySelector('.picker-head button').onclick=close;overlay.onclick=e=>{if(e.target===overlay)close();};
  const button=(text,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=fn;return b;};
  const title={date:'Выбрать дату',time:'Выбрать время',projectId:'Проект',goalId:'Блок'}[kind];overlay.querySelector('h3').textContent=title;panel.setAttribute('aria-label',title);
  if(kind==='date'){mountDateCalendar(body,{value,counts,onSelect:finish});body.append(button('В очередь',()=>finish('')));}
- else if(kind==='time'){
+ else if(kind==='time'){body.classList.add('time-content');
   let digits=(value||'1200').replace(':',''),fresh=true;const display=document.createElement('button');display.type='button';display.className='time-display';display.setAttribute('aria-label','Ввести время заново');display.onclick=()=>{fresh=true;digits='';draw();};
   const draw=()=>{const text=digits.padEnd(4,'–');display.textContent=text.slice(0,2)+':'+text.slice(2);};draw();
   const quick=document.createElement('div');quick.className='picker-shortcuts';for(const t of ['09:00','12:00','15:00','18:00'])quick.append(button(t,()=>{digits=t.replace(':','');fresh=true;draw();}));
   const keypad=document.createElement('div');keypad.className='time-keypad';const error=document.createElement('p');error.className='sheet-error';error.setAttribute('role','alert');
   for(const key of ['1','2','3','4','5','6','7','8','9','00','0','⌫']){const b=button(key,()=>{error.textContent='';if(key==='⌫'){digits=digits.slice(0,-1);fresh=false;}else{if(fresh){digits='';fresh=false;}digits=(digits+key).slice(0,4);}draw();});if(key==='⌫')b.setAttribute('aria-label','Удалить цифру');keypad.append(b);}
-  const save=button('Выбрать время',()=>{if(digits.length!==4||+digits.slice(0,2)>23||+digits.slice(2)>59){error.textContent='Введи время от 00:00 до 23:59';return;}finish(digits.slice(0,2)+':'+digits.slice(2));});save.className='primary';body.append(display,quick,keypad,error,save,button('Убрать время',()=>finish('')));
+  const save=button('Выбрать время',()=>{if(digits.length!==4||+digits.slice(0,2)>23||+digits.slice(2)>59){error.textContent='Введи время от 00:00 до 23:59';return;}finish(digits.slice(0,2)+':'+digits.slice(2));});save.className='primary';const actions=document.createElement('div');actions.className='time-actions';actions.append(button('Убрать время',()=>finish('')),save);body.append(display,quick,keypad,error,actions);
  }else{const list=document.createElement('div');list.className='picker-options';for(const item of items){const b=button(item.label,()=>finish(item.value));b.setAttribute('aria-pressed',String(item.value===value));list.append(b);}body.append(list);}
  overlay.querySelector('button').focus({preventScroll:true});
 }
