@@ -6,16 +6,16 @@ export function mountDateCalendar(body,{value='',counts={},onSelect}){
 }
 function localDay(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 // App-owned pickers never invoke native date/time selectors.
-export function openPicker(root,{kind,value='',items=[],counts={},height,onSelect}){
+export function openPicker(root,{kind,value='',items=[],counts={},height,allowUndated=false,onSelect}){
  const previous=document.activeElement;previous?.blur();const overlay=document.createElement('div');overlay.className='picker-overlay';
- overlay.innerHTML='<section class="picker-panel" role="dialog" aria-modal="true"><div class="picker-head"><h3></h3><button type="button" aria-label="Назад">‹</button></div><div class="picker-content"></div></section>';root.append(overlay);
+ overlay.innerHTML='<section class="picker-panel" role="dialog" aria-modal="true"><div class="picker-head"><h3></h3><button type="button" aria-label="Готово">Готово</button></div><div class="picker-content"></div></section>';root.append(overlay);
  const panel=overlay.firstElementChild,body=overlay.querySelector('.picker-content');if(height){panel.classList.add('composer-picker');panel.style.height=height+'px';}
  const close=()=>{document.removeEventListener('keydown',keys,true);overlay.remove();if(previous?.tagName==='BUTTON')previous.focus({preventScroll:true});};
  const keys=e=>{if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}if(e.key==='Tab'){const focus=[...panel.querySelectorAll('button')].filter(x=>!x.disabled);if(e.shiftKey&&document.activeElement===focus[0]){e.preventDefault();focus.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===focus.at(-1)){e.preventDefault();focus[0]?.focus();}}};
  document.addEventListener('keydown',keys,true);const finish=v=>{onSelect(v);close();};overlay.querySelector('.picker-head button').onclick=close;overlay.onclick=e=>{if(e.target===overlay)close();};
  const button=(text,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=fn;return b;};
  const title={date:'Выбрать дату',time:'Выбрать время',projectId:'Проект',goalId:'Блок'}[kind];overlay.querySelector('h3').textContent=title;panel.setAttribute('aria-label',title);
- if(kind==='date'){body.classList.add('date-content');mountDateCalendar(body,{value,counts,onSelect:finish});body.append(button('В очередь',()=>finish('')));}
+ if(kind==='date'){body.classList.add('date-content');mountDateCalendar(body,{value,counts,onSelect:finish});if(allowUndated)body.append(button('Без даты, в очередь',()=>finish('')));}
  else if(kind==='time'){body.classList.add('time-content');
   let digits=(value||'1200').replace(':',''),fresh=true;const display=document.createElement('button');display.type='button';display.className='time-display';display.setAttribute('aria-label','Ввести время заново');display.onclick=()=>{fresh=true;digits='';draw();};
   const draw=()=>{const text=digits.padEnd(4,'–');display.textContent=text.slice(0,2)+':'+text.slice(2);};draw();
