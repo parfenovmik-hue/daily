@@ -35,7 +35,7 @@
 #daily .task-title{flex:1;min-width:0;min-height:var(--control-height);padding:9px 0;text-align:left;font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
 #daily .row .time{font-size:12px;min-width:34px;font-weight:500;font-variant-numeric:tabular-nums;flex:none}
 #daily .important{width:13px;flex:none;display:grid;place-items:center;color:var(--mark)}#daily .important svg{fill:currentColor}
-#daily .inline-meta{display:flex;align-items:center;justify-content:flex-end;gap:4px;flex:none}
+
 #daily .project-tag{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:28px;min-height:30px;background:var(--soft);border-radius:6px;padding:3px 5px;font-size:11px;color:var(--quiet);white-space:nowrap}
 #daily .goal-chip{width:38px;min-width:38px;height:var(--control-height);padding:0;display:grid;place-items:center;color:var(--quiet)}#daily .goal-chip svg{width:21px;height:21px}
 #daily .compact-date{font-size:11px;white-space:nowrap;color:var(--quiet)}#daily .done .task-title{text-decoration:line-through;color:var(--quiet)}#daily .done .project-tag{background:transparent}#daily .done{opacity:.85}
@@ -78,7 +78,7 @@
 @keyframes sheet-up{from{opacity:.5;translate:0 30px}to{opacity:1;translate:0 0}}
 @media(hover:hover){#daily button:hover:not(:disabled){filter:brightness(.96)}#daily .task-title:hover,#daily .menu-link:hover{background:#e9eeee}}
 @media(min-width:850px){#daily .device{border-inline:1px solid var(--line)}#daily header,#daily main{padding-left:32px;padding-right:32px}#daily nav{border-inline:1px solid var(--line)}}
-@media(max-width:360px){#daily header,#daily main{padding-left:13px;padding-right:13px}#daily .page-heading{column-gap:8px}#daily .screen-title{font-size:26px}#daily .calendar-link{font-size:12px;padding:8px}#daily .page-heading .sub,#daily .sync-chip{font-size:11px}#daily .row{gap:5px}#daily .inline-meta{max-width:104px;gap:2px}#daily .project-tag{max-width:66px}#daily .goal-chip{width:30px;min-width:30px}#daily nav{grid-template-columns:1fr 1fr 60px 1fr 1fr}#daily .wish{grid-template-columns:64px minmax(0,1fr);gap:10px;padding:12px}#daily .wish-image{width:64px;height:85px}#daily .sheet-head{padding-inline:14px;grid-template-columns:65px minmax(0,1fr) 65px}#daily .sheet-body{padding-inline:14px}}
+@media(max-width:360px){#daily header,#daily main{padding-left:13px;padding-right:13px}#daily .page-heading{column-gap:8px}#daily .screen-title{font-size:26px}#daily .calendar-link{font-size:12px;padding:8px}#daily .page-heading .sub,#daily .sync-chip{font-size:11px}#daily .row{gap:5px}#daily .project-tag{max-width:66px}#daily .goal-chip{width:30px;min-width:30px}#daily nav{grid-template-columns:1fr 1fr 60px 1fr 1fr}#daily .wish{grid-template-columns:64px minmax(0,1fr);gap:10px;padding:12px}#daily .wish-image{width:64px;height:85px}#daily .sheet-head{padding-inline:14px;grid-template-columns:65px minmax(0,1fr) 65px}#daily .sheet-body{padding-inline:14px}}
 @media(prefers-reduced-motion:reduce){#daily *,#daily *::before,#daily *::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 /* Shared variables also cover dialogs, which sit outside .folio. */
 #daily{--paper:var(--color-background);--panel:var(--color-surface);--quiet:var(--color-text-secondary);--accent:#34363e;--mark:var(--color-accent);--sky:#717782;--focus-fill:var(--color-accent);--focus-text:var(--color-surface)}
@@ -283,9 +283,9 @@
 #daily #entry-form:not(.block-entry)>textarea{flex:1;height:auto;max-height:140px}
 
 html.sheet-open{overflow:hidden}
-#daily .inline-meta{max-width:154px;flex-wrap:wrap;row-gap:0}
+
 #daily .project-tag>span:not(.project-dot){min-width:0;max-width:88px;white-space:normal;overflow-wrap:anywhere;line-height:13px}
-@media(max-width:360px){#daily .inline-meta{max-width:138px}#daily .project-tag>span:not(.project-dot){max-width:80px}}
+@media(max-width:360px){#daily .project-tag>span:not(.project-dot){max-width:80px}}
 
 #daily.reorder-active,#daily.reorder-active *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
 #daily input:not([type=checkbox]),#daily textarea,#daily [contenteditable=true]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
@@ -353,9 +353,9 @@ html.sheet-open{overflow:hidden}
 #daily[data-compact-viewport=true] .time-content .time-keypad{grid-template-rows:repeat(4,minmax(36px,1fr));gap:4px}
 #daily[data-compact-viewport=true] .time-content .time-keypad button{font-size:20px}
 @media(max-width:360px){
- #daily .row:has(.important) .inline-meta{max-width:78px;gap:0}
- #daily .row:has(.important) .project-tag{max-width:48px;min-width:0;background:transparent;padding-inline:0;font-size:10px}
- #daily .row:has(.important) .project-tag>span:not(.project-dot){max-width:35px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:15px}
+
+
+
  #daily .row .goal-chip{width:25px;min-width:25px}
  #daily .row .time{min-width:32px;font-size:11px}
  #daily .row .important{width:14px;min-width:14px}
@@ -401,3 +401,38 @@ html.sheet-open{overflow:hidden}
  #daily .device:not([data-screen=day]) header,#daily .device:not([data-screen=day]) main{max-width:900px}
  #daily .project-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* Task cards: two text rows, with metadata occupying the same height. */
+#daily .day-sheet{display:grid;gap:7px;padding:0;border:0;border-radius:0;background:transparent}
+#daily .row.task-row{display:grid;grid-template-columns:24px 16px minmax(0,1fr) 64px;column-gap:6px;align-items:start;height:60px;min-height:60px;margin:7px 0;padding:5px 10px;border:1px solid var(--line);border-radius:var(--radius-control);background:var(--panel)}
+#daily .day-sheet>.task-row{margin:0}
+#daily .task-row>.check-hit{position:relative;display:block;grid-column:1;grid-row:1;width:24px;height:44px;min-height:44px}
+#daily .task-row>.check-hit input{position:absolute;top:3px;left:3px}
+#daily .task-row>.important{display:flex;grid-column:2;grid-row:1;align-items:flex-start;justify-content:center;width:16px;min-width:16px;height:44px;min-height:44px;padding:5px 0 0}
+#daily .task-row .task-title{grid-column:3;grid-row:1;display:flex;align-items:flex-start;min-width:0;width:100%;height:48px;min-height:48px;padding:0;font-size:16px;line-height:24px;text-align:left}
+#daily .task-row .task-title:hover{background:transparent}
+#daily .task-row .task-title:focus-visible{outline-offset:0}
+#daily .task-preview{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;max-height:48px;overflow:hidden;white-space:normal;overflow-wrap:anywhere;line-height:24px}
+#daily .task-meta{grid-column:4;grid-row:1;display:grid;grid-template-rows:24px 24px;min-width:0;height:48px}
+#daily .task-meta-top{display:flex;align-items:center;justify-content:space-between;gap:4px;min-width:0;height:24px}
+#daily .task-schedule{flex:1;min-width:0;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--quiet)}
+#daily .task-project{justify-self:end;min-width:0;max-width:100%}
+#daily .task-row .project-tag{min-width:0;min-height:24px;height:24px;max-width:64px;padding:0;background:transparent;border-radius:0;gap:3px;font-size:11px}
+#daily .task-row .project-tag>span:not(.project-dot){max-width:56px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:16px}
+#daily .task-row .project-dot{width:5px;height:5px}
+#daily .task-row .goal-chip{flex:none;width:24px;min-width:24px;height:24px;padding:0}
+#daily .task-row .goal-chip svg{width:18px;height:18px}
+#daily .row.task-row.done{opacity:1}
+#daily .planned-block>.row.task-row{margin:0;border:0;border-top:1px solid var(--line);border-radius:0;padding-inline:0}
+#daily .planned-block{background:var(--panel)}
+/* Read-only task view; edit and transfer remain explicit actions. */
+#daily .task-reader .sheet-body{overflow:hidden;display:flex;flex-direction:column;padding-top:18px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+#daily .reader-content{overflow:auto;min-height:0;max-height:min(440px,calc(var(--visual-height,100dvh) - 230px - env(safe-area-inset-top)));overscroll-behavior:contain}
+#daily .reader-content:focus-visible{outline:2px solid var(--petrol);outline-offset:-2px}
+#daily .reader-text{font-size:17px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+#daily .reader-properties{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px 12px;margin:22px 0 8px;font-size:12px;line-height:1.5}
+#daily .reader-properties dt{color:var(--quiet)}
+#daily .reader-properties dd{margin:0;overflow-wrap:anywhere}
+#daily .reader-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:none;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+#daily .reader-actions .primary,#daily .reader-actions .secondary{min-height:44px;margin:0;padding:10px}
+@media(max-width:360px){#daily .row.task-row{grid-template-columns:24px 14px minmax(0,1fr) 60px;column-gap:4px;padding-inline:8px}#daily .task-row>.important{width:14px;min-width:14px}#daily .task-row .project-tag{max-width:60px}#daily .task-row .project-tag>span:not(.project-dot){max-width:52px}#daily .reader-properties{grid-template-columns:62px minmax(0,1fr)}}
