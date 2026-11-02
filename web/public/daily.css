@@ -1,7 +1,7 @@
 /* Daily: one palette, one type scale, one spacing rhythm. */
 :root{color-scheme:light;--page:#f5f6f6;--surface:#fff;--ink:#252b2e;--muted:#657176;--line:#dfe5e5;--petrol:#197971;--soft:#ebefef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 *{box-sizing:border-box}html,body{margin:0;width:100%;max-width:100%;min-height:100%;overflow-x:hidden;overscroll-behavior-x:none;background:var(--page);color:var(--ink)}body.sheet-open{overflow:hidden}button,input,select,textarea{font:inherit;color:inherit}button{border:0;background:none;cursor:pointer}button:disabled{opacity:.45;cursor:default}button,a{-webkit-user-select:none;user-select:none}button,a,input,select,textarea{touch-action:manipulation;-webkit-tap-highlight-color:#19797116}a{color:var(--petrol)}svg{display:inline-block;vertical-align:middle;flex:none}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--petrol);outline-offset:3px}button:active:not(:disabled){filter:brightness(.94)}
-#daily{--paper:var(--page);--panel:var(--surface);--quiet:var(--muted);--accent:var(--ink);--mark:var(--petrol);font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color-scheme:light;width:100%;max-width:100%;overflow-x:clip;touch-action:pan-y pinch-zoom}
+#daily{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--paper:var(--page);--panel:var(--surface);--quiet:var(--muted);--accent:var(--ink);--mark:var(--petrol);font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color-scheme:light;width:100%;max-width:100%;overflow-x:clip;touch-action:pan-y pinch-zoom}
 #daily [hidden]{display:none!important}#daily h1,#daily h2,#daily h3,#daily p{margin:0}#daily h3{font-size:15px;line-height:1.4;font-weight:600;letter-spacing:-.15px;text-wrap:pretty}
 #daily .device{width:100%;min-width:0;max-width:760px;min-height:100dvh;margin:auto;padding-bottom:calc(94px + env(safe-area-inset-bottom));background:var(--paper)}
 #daily header{padding:calc(env(safe-area-inset-top) + 20px) 20px 8px}
@@ -71,22 +71,22 @@
 #daily{--paper:#f5f6f6;--panel:#fff;--quiet:#657176;--accent:#34363e;--mark:#197971;--sky:#717782;--focus-fill:#197971;--focus-text:#fff}
 #daily [hidden]{display:none!important}
 #daily .sheet{background:#fff}
-#daily .entry-sheet{max-width:560px;border-radius:27px 27px 0 0;padding-top:15px}
+
 #daily .entry-sheet:before{content:'';width:34px;height:4px;flex:none;background:#dfe5e5;border-radius:4px;margin:-6px auto 12px}
-#daily .entry-sheet .sheet-body{padding:0 20px calc(18px + env(safe-area-inset-bottom))}
-#daily #entry-form{display:grid;gap:12px}
-#daily #entry-form>textarea{width:100%;height:85px;min-height:85px;resize:vertical;max-height:180px;border:1.5px solid transparent;border-radius:15px;padding:14px;background:#eef1f1;color:#242c2e;font-family:inherit;font-size:17px;line-height:1.4}
-#daily .entry-types{margin:0;padding:4px;background:#eef1f1;display:grid;grid-template-columns:1fr 1fr;gap:7px;border-radius:13px}
-#daily .entry-types button{min-height:37px;border:1px solid transparent;border-radius:10px;background:transparent;color:#727c80;font-size:14px}
+
+
+
+
+
 #daily .entry-types button.active{background:#fff;border-color:#dfe5e5;color:#242c2e;box-shadow:0 2px 5px #18272919}
 #daily .entry-importance{display:flex;justify-content:flex-end}
 #daily .importance-toggle{border:1px solid #197971;border-radius:10px;min-height:40px;padding:7px 12px;color:#197971;font-size:15px;font-weight:500}
 #daily .importance-toggle[aria-pressed=true]{background:#197971;color:#fff}
-#daily .entry-dates{display:grid;grid-template-columns:.9fr .85fr 1.4fr 1.1fr;margin:0;gap:6px}
-#daily .entry-dates button{min-width:0;min-height:40px;border:1px solid #dfe5e5;border-radius:11px;font-size:12px;padding:6px 3px;white-space:nowrap;background:#fff;color:#242c2e}
+
+
 #daily .entry-dates button.active{background:#242c2e;color:#fff;border-color:#242c2e}
-#daily .entry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-#daily .entry-picker{min-width:0;width:100%;height:42px;border:1px solid #dfe5e5;border-radius:11px;background:#fff;padding:0 11px;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;font-size:15px}
+
+
 #daily .entry-picker span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #daily .entry-picker svg{width:16px;height:16px;flex:none;color:#727c80}
 #daily .entry-picker:disabled{opacity:.45}
@@ -94,9 +94,9 @@
 #daily #entry-form .sheet-error:empty{display:none}
 #daily #entry-form>.primary{margin:2px 0 0;height:50px;border-radius:14px;font-size:16px}
 #daily .picker-overlay{position:fixed;inset:0;background:#18272940;z-index:90;display:flex;align-items:flex-end;justify-content:center}
-#daily .picker-panel{width:100%;max-width:560px;max-height:calc(var(--visual-height,100dvh) - 20px);overflow:auto;background:#fff;padding:20px 20px calc(20px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0;box-shadow:0 -8px 30px #18272926;animation:sheet-up .18s ease-out}
-#daily .picker-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-#daily .picker-head h3{font-size:18px}
+
+
+
 #daily .picker-head button,#daily .picker-month button{min-width:44px;min-height:44px;background:#eef1f1;border-radius:10px}
 #daily .picker-month{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 #daily .picker-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}
@@ -112,14 +112,14 @@
 #daily .picker-shortcuts button{min-height:44px;padding:0 12px;border-radius:10px;background:#eef1f1}
 #daily .picker-content:not(.flag-content)>button:not(.primary){min-height:44px;margin-top:10px;color:#727c80}
 /* Picker and composer details share the base type scale. */
-#daily .picker-head h3{font:500 18px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+
 #daily .picker-time input{padding:0;margin:0;min-height:68px;line-height:1.2}
-#daily .picker-panel{overscroll-behavior:contain;bottom:var(--keyboard-inset,0px);position:relative}
+
 #daily .picker-options button{line-height:1.5;overflow-wrap:anywhere}
 #daily .sheet .field-help{font-size:12px}
-#daily .sheet .entry-dates button{font-size:12px}
-#daily #entry-form>textarea{font-family:inherit}
-@media(max-width:360px){#daily .entry-sheet .sheet-body{padding-inline:14px}#daily .entry-dates{gap:4px}#daily .entry-dates button{font-size:11px}}
+
+
+@media(max-width:360px){#daily .entry-sheet .sheet-body{padding-inline:14px}#daily .entry-dates{gap:4px}}
 #daily .page-heading.simple .sync-chip{grid-area:1/2;align-self:center}
 #daily .page-heading.simple .sub{grid-area:2/1/3/3}
 #daily .page-heading.simple .sub:empty{display:none}
@@ -153,9 +153,9 @@
 #daily .task-swipe-hint.to-left{justify-content:flex-end}
 #daily .task-swipe-hint.to-left svg{fill:currentColor}
 #daily .sheet-body{min-height:0;flex:1 1 auto}
-#daily .entry-sheet .sheet-body{padding-top:3px}
-#daily #entry-form{min-width:0;gap:10px}
-#daily #entry-form>textarea{min-width:0;max-width:100%;margin:0;display:block;flex-shrink:0}
+
+
+
 #daily #entry-form>.secondary{margin:0}
 #daily .transfer-label{margin:14px 0 8px;font-size:13px;color:var(--quiet)}
 #daily .transfer-days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
@@ -163,9 +163,9 @@
 #daily .transfer-days small{display:block;font-size:11px;color:var(--quiet);margin-top:2px}
 #daily .transfer-days .transfer-queue{grid-column:1/-1;background:var(--soft);margin-top:3px}
 #daily .transfer-calendar{margin-top:16px}
-#daily .picker-panel{max-width:440px;padding-top:14px;padding-inline:16px}
-#daily .picker-head{margin-bottom:8px}
-#daily .picker-head h3{font-size:16px}
+#daily .picker-panel{width:100%;max-width:440px;max-height:calc(var(--visual-height,100dvh) - 20px);overflow:auto;background:#fff;padding:20px 20px calc(20px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0;box-shadow:0 -8px 30px #18272926;animation:sheet-up .18s ease-out;overscroll-behavior:contain;bottom:var(--keyboard-inset,0px);position:relative;padding-top:14px;padding-inline:16px}
+#daily .picker-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+#daily .picker-head h3{font-size:16px;font:500 18px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 #daily .picker-month{margin:0 0 4px;min-height:40px;text-transform:capitalize;font-size:15px}
 #daily .picker-calendar{gap:2px}
 #daily .picker-calendar span{padding:4px 0;font-size:11px}
@@ -216,22 +216,22 @@
 #daily .date-content .picker-calendar small{height:10px;line-height:10px}
 #daily .date-content>button{flex:none;min-height:36px;margin:0}
 /* Composer keeps one surface and one footer across task/block modes. */
-#daily .entry-sheet{height:calc(490px + env(safe-area-inset-bottom))}
-#daily .entry-sheet .sheet-body{overflow:hidden}
-#daily #entry-form{height:100%;display:flex;flex-direction:column;gap:7px}
-#daily #entry-form>textarea{height:64px;min-height:64px;max-height:64px;resize:none;padding:11px;flex:none}
-#daily .entry-types{flex:none;padding:3px;gap:5px}
-#daily .entry-types button{min-height:34px}
+#daily .entry-sheet{max-width:560px;border-radius:27px 27px 0 0;padding-top:15px;height:calc(490px + env(safe-area-inset-bottom))}
+#daily .entry-sheet .sheet-body{padding:0 20px calc(18px + env(safe-area-inset-bottom));padding-top:3px;overflow:hidden}
+#daily #entry-form{display:flex;gap:7px;min-width:0;height:100%;flex-direction:column}
+#daily #entry-form>textarea{width:100%;height:64px;min-height:64px;resize:none;max-height:64px;border:1.5px solid transparent;border-radius:15px;padding:11px;background:#eef1f1;color:#242c2e;font-family:inherit;font-size:17px;line-height:1.4;min-width:0;max-width:100%;margin:0;display:block;flex-shrink:0;flex:none}
+#daily .entry-types{margin:0;padding:3px;background:#eef1f1;display:grid;grid-template-columns:1fr 1fr;gap:5px;border-radius:13px;flex:none}
+#daily .entry-types button{min-height:34px;border:1px solid transparent;border-radius:10px;background:transparent;color:#727c80;font-size:14px}
 #daily .entry-flags{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none}
 #daily .queue-toggle{min-height:36px;padding:5px 9px;border:1px solid var(--line);border-radius:10px;font-size:12px}
 #daily .queue-toggle.active{background:var(--soft);border-color:var(--petrol);color:var(--petrol)}
 #daily .importance-toggle{min-height:36px;padding:5px 10px;font-size:14px}
-#daily .entry-dates{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;flex:none}
-#daily .entry-dates button{min-height:44px;white-space:normal;font-size:11px;padding:3px 1px}
+#daily .entry-dates{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;gap:5px;flex:none}
+#daily .entry-dates button{min-width:0;min-height:44px;border:1px solid #dfe5e5;border-radius:11px;font-size:11px;padding:3px 1px;white-space:normal;background:#fff;color:#242c2e}
 #daily .entry-dates small{display:block;font-size:10px;line-height:15px;color:var(--quiet)}
 #daily .entry-dates .active small{color:#fff}
-#daily .entry-grid{flex:none}
-#daily .entry-picker{height:40px;font-size:14px}
+#daily .entry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;flex:none}
+#daily .entry-picker{min-width:0;width:100%;height:40px;border:1px solid #dfe5e5;border-radius:11px;background:#fff;padding:0 11px;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;font-size:14px}
 #daily .entry-footer{margin-top:auto;display:grid;gap:7px;flex:none}
 #daily .entry-footer .primary,#daily .entry-footer .secondary{margin:0;min-height:44px;padding:9px}
 #daily .entry-footer>.danger{min-height:36px;font-size:13px}
@@ -258,7 +258,7 @@
 #daily .reordering{opacity:.22;pointer-events:none}
 #daily.reorder-active{touch-action:none;user-select:none}
 #daily [data-row],#daily [data-row] *,#daily .drag-ghost,#daily .drag-ghost *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-@media(max-width:360px){#daily .project-tag{max-width:104px;font-size:10px}#daily .entry-dates button{font-size:10px}#daily .entry-dates small{font-size:9px}}
+@media(max-width:360px){#daily .project-tag{max-width:104px;font-size:10px}}
 
 #daily .page-heading:not(.simple){grid-template-columns:minmax(0,1fr) 130px}
 #daily .sync-chip{width:130px;overflow:hidden;text-overflow:ellipsis}
@@ -315,3 +315,40 @@ html.sheet-open{overflow:hidden}
 #daily .search-context{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;margin-left:32px;font-size:11px;line-height:1.4;color:var(--quiet)}
 #daily .search-context button{min-height:28px;padding:3px 0;font-size:11px;color:var(--quiet);text-align:left;text-decoration:underline;text-underline-offset:3px}
 #daily .search-context span{overflow-wrap:anywhere}
+
+/* Step 1: compact viewport preserves actions; date/time panels never scroll. */
+#daily .quick-date-short{display:none}
+#daily[data-compact-viewport=true] .entry-dates{display:none}
+#daily[data-compact-viewport=true] .entry-sheet{padding-top:12px}
+#daily[data-compact-viewport=true] .entry-sheet:before{margin-bottom:8px}
+#daily[data-compact-viewport=true] .entry-sheet .sheet-body{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+#daily[data-compact-viewport=true] #entry-form{gap:5px}
+#daily[data-compact-viewport=true] #entry-form>textarea{flex:1;min-height:48px;max-height:80px;padding:9px 11px}
+#daily[data-compact-viewport=true] .entry-types button{min-height:32px}
+#daily[data-compact-viewport=true] .entry-footer{grid-template-columns:1fr 1fr;gap:5px}
+#daily[data-compact-viewport=true] .entry-footer>.primary{grid-column:1/-1}
+#daily[data-compact-viewport=true] .entry-footer>.secondary,#daily[data-compact-viewport=true] .entry-footer>.danger{min-height:36px;padding:5px;font-size:12px}
+#daily[data-compact-viewport=true] .block-composer{min-height:76px}
+#daily[data-compact-viewport=true] .block-composer .heading{min-height:20px}
+#daily[data-compact-viewport=true] #block-steps{min-height:18px}
+#daily[data-compact-viewport=true] #block-steps .quiet{display:none}
+#daily[data-compact-viewport=true] .composer-picker{padding:10px 16px 12px}
+#daily[data-compact-viewport=true] .composer-picker .picker-head{margin-bottom:4px}
+#daily[data-compact-viewport=true] .composer-picker .picker-head button{min-height:36px}
+#daily[data-compact-viewport=true] .composer-picker .time-content{gap:4px}
+#daily[data-compact-viewport=true] .time-content>.time-display{height:32px;min-height:32px;font-size:28px}
+#daily[data-compact-viewport=true] .time-content .picker-shortcuts{display:none}
+#daily[data-compact-viewport=true] .time-content .time-keypad{grid-template-rows:repeat(4,minmax(36px,1fr));gap:4px}
+#daily[data-compact-viewport=true] .time-content .time-keypad button{font-size:20px}
+@media(max-width:360px){
+ #daily .row:has(.important) .inline-meta{max-width:78px;gap:0}
+ #daily .row:has(.important) .project-tag{max-width:48px;min-width:0;background:transparent;padding-inline:0;font-size:10px}
+ #daily .row:has(.important) .project-tag>span:not(.project-dot){max-width:35px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:15px}
+ #daily .row .goal-chip{width:25px;min-width:25px}
+ #daily .row .time{min-width:32px;font-size:11px}
+ #daily .row .important{width:14px;min-width:14px}
+ #daily .entry-dates button{font-size:11px;line-height:14px;overflow-wrap:anywhere}
+ #daily .entry-dates small{font-size:10px}
+ #daily .quick-date-full{display:none}
+ #daily .quick-date-short{display:inline}
+}
