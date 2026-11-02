@@ -145,3 +145,37 @@
 #daily .connection-code{width:100%;min-height:120px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);font-family:inherit;font-size:16px;line-height:1.5;overflow-wrap:anywhere;margin-top:14px}
 
 #daily .pairing-code{width:100%;min-width:0;text-align:center;font-size:clamp(18px,5vw,26px);font-weight:600;letter-spacing:.06em;font-variant-numeric:tabular-nums;padding:18px 10px;}
+/* Gestures have a stable surface; native scrolling remains vertical. */
+#daily main{display:flow-root}
+#daily .row{position:relative;background:var(--paper);z-index:1}
+#daily .day-sheet .row{background:var(--panel)}
+#daily .task-swipe-hint{position:relative;display:flex;align-items:center;gap:5px;color:var(--petrol);font-size:12px;font-weight:500;pointer-events:none;overflow:hidden;padding:0 4px}
+#daily .task-swipe-hint.to-left{justify-content:flex-end}
+#daily .task-swipe-hint.to-left svg{fill:currentColor}
+#daily .sheet-body{min-height:0;flex:1 1 auto}
+#daily .entry-sheet .sheet-body{padding-top:3px}
+#daily #entry-form{min-width:0;gap:10px}
+#daily #entry-form>textarea{min-width:0;max-width:100%;margin:0;display:block;flex-shrink:0}
+#daily #entry-form>.secondary{margin:0}
+#daily .transfer-label{margin:14px 0 8px;font-size:13px;color:var(--quiet)}
+#daily .transfer-days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#daily .transfer-days button{min-width:0;min-height:56px;padding:8px 10px;border:1px solid var(--line);border-radius:11px;text-align:left;font-size:14px;background:var(--panel)}
+#daily .transfer-days small{display:block;font-size:11px;color:var(--quiet);margin-top:2px}
+#daily .transfer-days .transfer-queue{grid-column:1/-1;background:var(--soft);margin-top:3px}
+#daily .transfer-calendar{margin-top:16px}
+#daily .picker-panel{max-width:440px;padding-top:14px;padding-inline:16px}
+#daily .picker-head{margin-bottom:8px}
+#daily .picker-head h3{font-size:16px}
+#daily .picker-month{margin:0 0 4px;min-height:40px;text-transform:capitalize;font-size:15px}
+#daily .picker-calendar{gap:2px}
+#daily .picker-calendar span{padding:4px 0;font-size:11px}
+#daily .picker-calendar button{height:44px;min-height:44px;line-height:19px;padding:3px 0;font-variant-numeric:tabular-nums}
+#daily .picker-calendar small{display:block;height:12px;line-height:12px;font-size:10px;color:var(--quiet)}
+#daily .picker-calendar .selected small{color:#fff}
+#daily .time-display{display:block;width:100%;margin:4px 0 12px;padding:8px;font-size:36px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:3px;color:var(--petrol)}
+#daily .picker-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+#daily .picker-shortcuts button{min-width:0;padding:0 4px;font-size:13px}
+#daily .time-keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:12px}
+#daily .time-keypad button{height:44px;border-radius:10px;background:var(--soft);font-size:22px;font-variant-numeric:tabular-nums}
+
+#daily .picker-month>span{flex:1;min-width:0;text-align:center;white-space:nowrap;font-size:14px;color:var(--ink)}
