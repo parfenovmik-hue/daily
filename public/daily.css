@@ -135,3 +135,10 @@
 #daily .logo-upload .upload-button{flex:1;min-width:0}
 #daily #project-logo-preview:empty{display:none}
 #daily .logo-upload:has(#project-logo-preview:empty) .clear-logo{visibility:hidden}
+#daily .motion-viewport{position:fixed;z-index:40;overflow:hidden;pointer-events:none;background:var(--paper);contain:layout paint;user-select:none}
+#daily .motion-page{position:absolute!important;left:0;top:0;background:var(--paper);will-change:transform;pointer-events:none}
+#daily .motion-page header{padding-top:calc(env(safe-area-inset-top) + 20px)}
+#daily .motion-page.week{display:grid}
+#daily .project-delete{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;border-top:1px solid var(--line);padding-top:16px}
+#daily .primary.destructive{background:#a24655}
+#daily .toolbar .return-today{min-height:34px;padding:6px 11px;border-radius:10px;background:var(--petrol);color:#fff;font-weight:500}
