@@ -1,5 +1,5 @@
-const CACHE='daily-pages-1.1.2-r1';
-const SHELL=['./','./daily.js','./daily.css','./model.js','./store.js','./icons.js','./pickers.js','./project-image.js','./updater.js','./motion.js','./notes-import.js','./cloud.js','./server-config.js','./manifest.webmanifest','./icon.svg','./apple-touch-icon.png','./icon-192.png','./icon-512.png'];
+const CACHE='daily-pages-1.2.0-r1';
+const SHELL=['./','./daily.js','./daily.css','./model.js','./store.js','./icons.js','./pickers.js','./project-image.js','./updater.js','./motion.js','./notes-import.js','./cloud.js','./server-config.js','./wish-input.js','./manifest.webmanifest','./icon.svg','./apple-touch-icon.png','./icon-192.png','./icon-512.png'];
 const urls=SHELL.map(p=>new URL(p,self.location.href).href);
 self.addEventListener('install',e=>e.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(urls.map(u=>new Request(u,{cache:'reload'})));await self.skipWaiting();})()));
 self.addEventListener('activate',e=>e.waitUntil((async()=>{for(const k of await caches.keys())if(k.startsWith('daily-pages-')&&k!==CACHE)await caches.delete(k);await self.clients.claim();})()));
