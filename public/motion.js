@@ -14,5 +14,5 @@ export class PageSlide{
   const options={duration,easing:'cubic-bezier(.22,.72,.18,1)',fill:'forwards'};
   await Promise.all([this.old.animate([{transform:`translate3d(${from}px,0,0)`},{transform:`translate3d(${target}px,0,0)`}],options).finished.catch(()=>{}),this.next.animate([{transform:`translate3d(${backFrom}px,0,0)`},{transform:`translate3d(${backTo}px,0,0)`}],options).finished.catch(()=>{})]);
  }
- dispose(){this.surface.style.visibility=this.originalVisibility;if(this.nav)this.nav.style.visibility=this.navVisibility;this.layer.remove();}
+ dispose(){if(this.disposed)return;this.disposed=true;this.surface.style.visibility=this.originalVisibility;if(this.nav)this.nav.style.visibility=this.navVisibility;this.layer.remove();}
 }

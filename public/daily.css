@@ -1,9 +1,9 @@
 /* Daily: one palette, one type scale, one spacing rhythm. */
 :root{color-scheme:light;--page:#f5f6f6;--surface:#fff;--ink:#252b2e;--muted:#657176;--line:#dfe5e5;--petrol:#197971;--soft:#ebefef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--page);color:var(--ink)}body.sheet-open{overflow:hidden}button,input,select,textarea{font:inherit;color:inherit}button{border:0;background:none;cursor:pointer}button:disabled{opacity:.45;cursor:default}button,a{-webkit-user-select:none;user-select:none}button,a,input,select,textarea{touch-action:manipulation;-webkit-tap-highlight-color:#19797116}a{color:var(--petrol)}svg{display:inline-block;vertical-align:middle;flex:none}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--petrol);outline-offset:3px}button:active:not(:disabled){filter:brightness(.94)}
-#daily{--paper:var(--page);--panel:var(--surface);--quiet:var(--muted);--accent:var(--ink);--mark:var(--petrol);font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color-scheme:light}
+*{box-sizing:border-box}html,body{margin:0;width:100%;max-width:100%;min-height:100%;overflow-x:hidden;overscroll-behavior-x:none;background:var(--page);color:var(--ink)}body.sheet-open{overflow:hidden}button,input,select,textarea{font:inherit;color:inherit}button{border:0;background:none;cursor:pointer}button:disabled{opacity:.45;cursor:default}button,a{-webkit-user-select:none;user-select:none}button,a,input,select,textarea{touch-action:manipulation;-webkit-tap-highlight-color:#19797116}a{color:var(--petrol)}svg{display:inline-block;vertical-align:middle;flex:none}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--petrol);outline-offset:3px}button:active:not(:disabled){filter:brightness(.94)}
+#daily{--paper:var(--page);--panel:var(--surface);--quiet:var(--muted);--accent:var(--ink);--mark:var(--petrol);font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color-scheme:light;width:100%;max-width:100%;overflow-x:clip;touch-action:pan-y pinch-zoom}
 #daily [hidden]{display:none!important}#daily h1,#daily h2,#daily h3,#daily p{margin:0}#daily h3{font-size:15px;line-height:1.4;font-weight:600;letter-spacing:-.15px;text-wrap:pretty}
-#daily .device{max-width:760px;min-height:100dvh;margin:auto;padding-bottom:calc(94px + env(safe-area-inset-bottom));background:var(--paper)}
+#daily .device{width:100%;min-width:0;max-width:760px;min-height:100dvh;margin:auto;padding-bottom:calc(94px + env(safe-area-inset-bottom));background:var(--paper)}
 #daily header{padding:calc(env(safe-area-inset-top) + 20px) 20px 8px}
 #daily main{padding:0 20px 24px;min-height:170px;touch-action:pan-y;overflow-x:clip}
 #daily .page-heading{display:grid;grid-template-columns:minmax(0,1fr) max-content;grid-template-rows:minmax(44px,auto) auto;gap:6px 12px;align-items:center}
@@ -142,6 +142,6 @@
 #daily .project-delete{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;border-top:1px solid var(--line);padding-top:16px}
 #daily .primary.destructive{background:var(--ink)}
 #daily .toolbar .return-today{min-height:34px;padding:6px 11px;border-radius:10px;background:var(--petrol);color:#fff;font-weight:500}
-#daily .connection-code{width:100%;min-height:120px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);font-family:inherit;font-size:14px;line-height:1.5;overflow-wrap:anywhere;margin-top:14px}
+#daily .connection-code{width:100%;min-height:120px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);font-family:inherit;font-size:16px;line-height:1.5;overflow-wrap:anywhere;margin-top:14px}
 
-.pairing-code{width:100%;min-width:0;text-align:center;font-size:clamp(18px,5vw,26px);font-weight:600;letter-spacing:.06em;font-variant-numeric:tabular-nums;padding:18px 10px;}
+#daily .pairing-code{width:100%;min-width:0;text-align:center;font-size:clamp(18px,5vw,26px);font-weight:600;letter-spacing:.06em;font-variant-numeric:tabular-nums;padding:18px 10px;}
