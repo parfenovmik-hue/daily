@@ -1,10 +1,19 @@
+// Clip page motion below bottom navigation, while leaving a desktop sidebar visible.
+export function slideViewportBounds(surface,nav,viewportHeight){
+ const overlaps=nav&&nav.left<surface.right&&nav.right>surface.left;
+ const bottomBar=overlaps&&nav.top>surface.top&&nav.width>surface.width*.5;
+ const sidebar=overlaps&&!bottomBar&&nav.right<=surface.left+surface.width*.35;
+ return {bottom:bottomBar?Math.min(viewportHeight,nav.top):viewportHeight,clipLeft:sidebar?Math.max(0,nav.right-surface.left):0};
+}
 // One continuous slide: the incoming page exists before the gesture starts.
 export class PageSlide{
  constructor(surface,incoming,{direction=1,back=false,indicator}={}){
   this.indicator=indicator;this.direction=direction;this.back=back;this.x=0;this.surface=surface;
   const r=surface.getBoundingClientRect(),nav=document.querySelector('#daily nav')?.getBoundingClientRect();this.width=r.width;
+  const bounds=slideViewportBounds(r,nav,innerHeight);
   const layer=document.createElement('div');layer.className='motion-viewport';layer.setAttribute('aria-hidden','true');layer.inert=true;
-  Object.assign(layer.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:Math.max(0,Math.min(Math.max(r.height,incoming.scrollHeight||r.height), (nav?.top||innerHeight)-r.top))+'px'});
+  Object.assign(layer.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:Math.max(0,Math.min(Math.max(r.height,incoming.scrollHeight||r.height), bounds.bottom-r.top))+'px'});
+  if(bounds.clipLeft)layer.style.clipPath=`inset(0 0 0 ${bounds.clipLeft}px)`;
   const old=surface.cloneNode(true);this.old=old;this.next=incoming;this.layer=layer;
   for(const n of [old,incoming]){n.querySelector('nav')?.remove();n.removeAttribute('id');n.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));n.classList.add('motion-page');n.style.margin='0';n.style.width=r.width+'px';n.style.minHeight=r.height+'px';n.style.transform='';}
   layer.append(incoming,old);document.getElementById('daily').append(layer);this.originalVisibility=surface.style.visibility;this.nav=surface.querySelector('nav');this.navVisibility=this.nav?.style.visibility;surface.style.visibility='hidden';if(this.nav)this.nav.style.visibility='visible';this.paint(0);
