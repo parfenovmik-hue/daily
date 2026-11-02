@@ -8,7 +8,7 @@ function localDay(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStar
 // App-owned pickers never invoke native date/time selectors.
 export function openPicker(root,{kind,value='',items=[],counts={},height,allowUndated=false,onSelect}){
  const previous=document.activeElement;previous?.blur();const overlay=document.createElement('div');overlay.className='picker-overlay';
- overlay.innerHTML='<section class="picker-panel" role="dialog" aria-modal="true"><div class="picker-head"><h3></h3><button type="button" aria-label="Готово">Готово</button></div><div class="picker-content"></div></section>';root.append(overlay);
+ overlay.innerHTML='<section class="picker-panel" role="dialog" aria-modal="true"><div class="picker-head"><h3></h3><button type="button" aria-label="Закрыть">Закрыть</button></div><div class="picker-content"></div></section>';root.append(overlay);
  const panel=overlay.firstElementChild,body=overlay.querySelector('.picker-content');if(height){panel.classList.add('composer-picker');panel.style.height=height+'px';}
  const close=()=>{document.removeEventListener('keydown',keys,true);overlay.remove();if(previous?.tagName==='BUTTON')previous.focus({preventScroll:true});};
  const keys=e=>{if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}if(e.key==='Tab'){const focus=[...panel.querySelectorAll('button')].filter(x=>!x.disabled);if(e.shiftKey&&document.activeElement===focus[0]){e.preventDefault();focus.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===focus.at(-1)){e.preventDefault();focus[0]?.focus();}}};
