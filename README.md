@@ -1,5 +1,9 @@
 # Daily — действующий frontend
 
+Единая PWA для iOS, Android, macOS и Windows с приоритетом iPhone и Mac.
+Адаптивность, Safari/Chrome/Edge, touch/мышь/клавиатура, установка и различия
+платформ — требования ../PLATFORMS.md. Фактические проверки — ../TESTING.md.
+
 Vanilla JavaScript, HTML и CSS. React, Next.js, Cloudflare, D1, ChatGPT Auth
 и их npm-зависимости вынесены из проекта. Собственный Node.js-сервер
 для пользователей не требуется; backend — ../backend/Code.gs.
