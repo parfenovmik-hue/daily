@@ -142,3 +142,4 @@
 #daily .project-delete{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;border-top:1px solid var(--line);padding-top:16px}
 #daily .primary.destructive{background:var(--ink)}
 #daily .toolbar .return-today{min-height:34px;padding:6px 11px;border-radius:10px;background:var(--petrol);color:#fff;font-weight:500}
+#daily .connection-code{width:100%;min-height:120px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);font-family:inherit;font-size:14px;line-height:1.5;overflow-wrap:anywhere;margin-top:14px}
