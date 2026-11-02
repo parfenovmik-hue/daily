@@ -1,4 +1,4 @@
-const CACHE='daily-pages-1.0.5-r1';
+const CACHE='daily-pages-1.0.6-r1';
 const SHELL=['./','./daily.js','./daily.css','./model.js','./store.js','./icons.js','./pickers.js','./project-image.js','./updater.js','./motion.js','./notes-import.js','./cloud.js','./server-config.js','./manifest.webmanifest','./icon.svg','./apple-touch-icon.png','./icon-192.png','./icon-512.png'];
 const urls=SHELL.map(p=>new URL(p,self.location.href).href);
 self.addEventListener('install',e=>e.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(urls.map(u=>new Request(u,{cache:'reload'})));await self.skipWaiting();})()));

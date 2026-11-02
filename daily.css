@@ -192,16 +192,26 @@
 #daily .transfer-days .transfer-queue{min-height:40px}
 #daily .composer-picker{display:flex;flex-direction:column;overflow:hidden}
 #daily .composer-picker .picker-head{flex:none}
-#daily .composer-picker .picker-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;flex:1}
+#daily .composer-picker .picker-content{min-height:0;overflow:hidden;flex:1}
 @media(max-width:360px){#daily .transfer-days{grid-template-columns:1fr}}
 
 #daily .composer-picker .time-content{display:flex;flex-direction:column;gap:8px;overflow:hidden}
 #daily .time-content>.time-display{height:48px;min-height:48px;margin:0;padding:0;flex:none;color:var(--petrol)}
 #daily .time-content .picker-shortcuts{flex:none}
 #daily .time-content .picker-shortcuts button{min-height:36px}
-#daily .time-content .time-keypad{flex:1;min-height:128px;margin:0;grid-template-rows:repeat(4,minmax(32px,1fr));gap:5px}
-#daily .time-content .time-keypad button{height:auto;min-height:32px}
+#daily .time-content .time-keypad{flex:1;min-height:0;margin:0;grid-template-rows:repeat(4,minmax(0,1fr));gap:5px}
+#daily .time-content .time-keypad button{height:auto;min-height:0;padding:0}
 #daily .time-content .sheet-error:empty{display:none}
 #daily .time-actions{display:grid;grid-template-columns:1fr 2fr;gap:8px;flex:none}
 #daily .time-actions button{min-height:44px;margin:0;font-size:13px}
 #daily .time-actions>button:first-child{color:var(--quiet)}
+
+/* Date and time are fixed compositions, never inner scroll areas. */
+#daily .composer-picker .date-content{display:flex;flex-direction:column;gap:4px;overflow:hidden}
+#daily .date-content .picker-month{flex:none;min-height:36px;margin:0}
+#daily .date-content .picker-month button{min-height:36px}
+#daily .date-content .picker-calendar{flex:1;min-height:0;grid-template-rows:20px repeat(var(--week-rows,6),minmax(0,1fr));gap:2px}
+#daily .date-content .picker-calendar>span{padding:0;align-self:center}
+#daily .date-content .picker-calendar button{height:100%;min-height:0;padding:0;line-height:18px}
+#daily .date-content .picker-calendar small{height:10px;line-height:10px}
+#daily .date-content>button{flex:none;min-height:36px;margin:0}
