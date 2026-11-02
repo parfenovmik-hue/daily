@@ -108,7 +108,7 @@ async function start(){
   const content={day:dayHTML,queue:()=>`${list('task').filter(t=>!t.date&&!t.done).map(t=>taskRow(t)).join('')||'<div class="empty">Очередь пуста. В новой задаче выбери «В очередь», чтобы оставить её на потом.</div>'}`,projects:projectsHTML,project:projectHTML,goal:goalHTML,calendar:calendarHTML,shopping:shoppingHTML,wishes:wishHTML,reports:reportsHTML,more:moreHTML,settings:settingsHTML,info:()=>`${button('back',icon('left',20)+esc(projectTitle(ui.projectId)),'class="back"')}<form autocomplete="off" id="project-info-form"><textarea class="info-editor" name="info" placeholder="Описание, ссылки и важные пометки" aria-label="Информация проекта">${esc(get(ui.projectId)?.info||'')}</textarea><button type="submit" class="primary">Сохранить информацию</button></form>`};
   return `<div class="device folio"><header><div class="page-heading ${ui.screen!=='day'?'simple':''}"><h1 class="screen-title">${esc(titles[ui.screen]||'Daily')}</h1>${ui.screen==='day'?button('calendar',icon('calendar',18)+'<span>Календарь</span>','class="calendar-link" aria-label="Открыть календарь"'):''}<div class="sub">${esc(sub)}</div>${button('sync-now',syncLabel(),`id="sync" class="sync-chip ${ui.sync==='error'?'error':''}" aria-label="Состояние синхронизации"`)}</div>${ui.screen==='day'?weekHTML():''}</header><main id="page">${['shopping','wishes','settings','calendar','queue'].includes(ui.screen)?button('back',icon('left',20)+'Назад','class="back"'):''}${(content[ui.screen]||dayHTML)()}</main><nav aria-label="Разделы Daily">${[['day','sun','Сегодня'],['projects','flag','Проекты'],['add','plus','Добавить'],['more','grid','Ещё'],['reports','chart','Итоги']].map(([page,i,label])=>button(page,icon(i,page==='add'?25:20)+(page==='add'?'':label),`class="${page==='add'?'nav-add':active===page?'active':''}" aria-label="${page==='add'?'Добавить':label}" ${active===page?'aria-current="page"':''}`)).join('')}</nav></div><div id="dialog-root"></div><div id="toast-root" aria-live="polite"></div>`;
  }
- function render(){root.innerHTML=shellHTML();drawToast();if(ui.sheet)drawSheet();
+ function render(force=false){if(ui.animating&&!force){ui.renderPending=true;return;}ui.renderPending=false;resetPan();root.innerHTML=shellHTML();drawToast();if(ui.sheet)drawSheet();
  }
  function visit(screen,properties={},history=true){if(ui.screen===screen&&Object.keys(properties).every(k=>ui[k]===properties[k]))return;if(history)ui.history.push({screen:ui.screen,projectId:ui.projectId,goalId:ui.goalId,day:ui.day});Object.assign(ui,properties,{screen,actionId:''});render();window.scrollTo({top:0,behavior:'instant'});}
  function goBack(){if(ui.sheet){closeSheet();return;}if(!ui.history.length){visit('projects',{},false);return;}slideTo('back',-1,ui.history.at(-1),()=>ui.history.pop());}
@@ -156,12 +156,12 @@ async function start(){
  function preview(changes,selector){const old={...ui};Object.assign(ui,changes);const template=document.createElement('template');try{template.innerHTML=shellHTML();return template.content.querySelector(selector);}finally{Object.assign(ui,old);}}
  function destination(type,direction){if(type==='week')return {week:addDays(ui.week,direction*7)};if(type==='month'){const[y,m]=ui.month.split('-').map(Number);return{month:dayKey(new Date(y,m-1+direction,1)).slice(0,7)};}if(type==='back')return ui.history.at(-1);const date=addDays(ui.day,direction);return{day:date,week:weekStart(date),followToday:date===dayKey(),screen:'day',actionId:''};}
  function makeSlide(type,direction,changes){const selector=targetSelector(type),surface=$(selector),incoming=preview(changes,selector);return surface&&incoming?new PageSlide(surface,incoming,{direction,back:type==='back'}):null;}
- async function slideTo(type,direction,changes,after,existing){if(ui.animating||!changes)return;ui.animating=true;let motion=existing;try{if(!motion&&!matchMedia('(prefers-reduced-motion: reduce)').matches)motion=makeSlide(type,direction,changes);if(motion)await motion.finish(true);Object.assign(ui,changes);after?.();render();}finally{motion?.dispose();ui.animating=false;}}
+ async function slideTo(type,direction,changes,after,existing){if(ui.animating||!changes)return;ui.animating=true;let motion=existing;try{if(!motion&&!matchMedia('(prefers-reduced-motion: reduce)').matches)motion=makeSlide(type,direction,changes);if(motion)await motion.finish(true);Object.assign(ui,changes);after?.();render(true);}finally{motion?.dispose();ui.animating=false;}}
  function moveDay(date){if(ui.screen==='day'&&date===ui.day){if(ui.week!==weekStart(date)){ui.week=weekStart(date);render();}return;}closeSheet(false);slideTo('day',date>ui.day?1:-1,{day:date,followToday:date===dayKey(),week:weekStart(date),screen:'day',actionId:''});}
  function moveWeek(n){slideTo('week',n,destination('week',n));}
  function moveMonth(n){slideTo('month',n,destination('month',n));}
  root.addEventListener('pointerdown',e=>{
-  if(ui.sheet||ui.animating||e.target.closest('input,textarea,select,nav,.toast,.motion-viewport'))return;
+  if(pan||!e.isPrimary||ui.sheet||ui.animating||e.target.closest('input,textarea,select,nav,.toast,.motion-viewport'))return;
   const edge=e.clientX-root.getBoundingClientRect().left<=24&&ui.history.length>0,row=e.target.closest('[data-row]'),week=e.target.closest('.week'),month=e.target.closest('.calendar'),type=edge?'back':row?'task':week?'week':month?'month':ui.screen==='day'?'day':null;if(!type)return;
   pan={x:e.clientX,y:e.clientY,lastX:e.clientX,lastAt:e.timeStamp,velocity:0,type,id:row?.dataset.row,surface:row||week||month||$('#page'),active:false,motion:null};
  });
@@ -169,11 +169,16 @@ async function start(){
   if(!p.active)return;const elapsed=e.timeStamp-p.lastAt;if(elapsed>0)p.velocity=(e.clientX-p.lastX)/elapsed;p.lastX=e.clientX;p.lastAt=e.timeStamp;
   if(p.type==='task'){p.surface.style.transform=`translate3d(${Math.max(-100,Math.min(100,dx*.6))}px,0,0)`;return;}let x=p.direction===1?Math.min(0,dx):Math.max(0,dx);x=Math.max(-p.motion?.width||-innerWidth,Math.min(p.motion?.width||innerWidth,x));p.motion?.paint(x);
  });
- async function cancelPan(p){if(p.motion){ui.animating=true;try{await p.motion.finish(false);}finally{p.motion.dispose();ui.animating=false;}}else if(p.surface){const from=p.surface.style.transform;p.surface.style.transform='';if(from)p.surface.animate([{transform:from},{transform:'translate3d(0,0,0)'}],{duration:220,easing:'cubic-bezier(.22,.72,.18,1)'});}}
+ async function cancelPan(p){if(p.motion){ui.animating=true;try{await p.motion.finish(false);}finally{p.motion.dispose();ui.animating=false;if(ui.renderPending)render();}}else if(p.surface){const from=p.surface.style.transform;p.surface.style.transform='';if(from)p.surface.animate([{transform:from},{transform:'translate3d(0,0,0)'}],{duration:220,easing:'cubic-bezier(.22,.72,.18,1)'});}}
  root.addEventListener('pointerup',async e=>{if(!pan)return;const p=pan;pan=null;const dx=e.clientX-p.x,dy=e.clientY-p.y;if(root.hasPointerCapture?.(e.pointerId))root.releasePointerCapture(e.pointerId);if(!p.active)return;ui.lastSwipe=Date.now();if(p.type==='task'){if(Math.abs(dx)<65||Math.abs(dx)<Math.abs(dy)*1.5){await cancelPan(p);return;}await cancelPan(p);if(!get(p.id))return;if(dx>0)openTransfer(p.id);else{ui.actionId=p.id;render();}return;}const signed=-p.direction*dx,width=p.motion?.width||innerWidth,commit=signed>width*.24||(signed>30&&-p.direction*p.velocity>.35);if(!commit){await cancelPan(p);return;}await slideTo(p.type,p.direction,p.changes,p.type==='back'?()=>ui.history.pop():null,p.motion);});
+ function resetPan(){if(!pan)return;const p=pan;pan=null;p.motion?.dispose();if(p.type==='task'&&p.surface)p.surface.style.transform='';}
  root.addEventListener('pointercancel',()=>{if(pan){const p=pan;pan=null;cancelPan(p);}});
+ root.addEventListener('lostpointercapture',()=>{if(pan){const p=pan;pan=null;cancelPan(p);}});
+ window.addEventListener('blur',resetPan);
+ window.addEventListener('resize',resetPan);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)resetPan();});
  root.addEventListener('click',async e=>{
-  if(Date.now()-ui.lastSwipe<350){e.preventDefault();return;}
+  if(ui.animating||Date.now()-ui.lastSwipe<350){e.preventDefault();return;}
   const b=e.target.closest('[data-action]');if(!b)return;const action=b.dataset.action,id=b.dataset.id;
   try{
    switch(action){
