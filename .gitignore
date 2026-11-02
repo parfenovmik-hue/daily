@@ -1,14 +1,15 @@
-# Generated publishing checkout (its own Git repository)
-/pages/
-
-# Local state and secrets
+# Private credentials, exports, backups and retired project snapshots
+/private/
+**/.clasp.json
+**/InitialSetup.gs
+**/.clasprc*
 .env*
-.dev.vars*
+**/.env*
 *.pem
 *.key
-/node_modules/
-/coverage/
-/outputs/
-/work/
+# Generated static site; GitHub Actions publishes this directory
+/web/pages/
+node_modules/
+coverage/
 .DS_Store
-npm-debug.log*
+*.log

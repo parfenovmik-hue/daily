@@ -1,0 +1,14 @@
+# Generated publishing checkout (its own Git repository)
+/pages/
+
+# Local state and secrets
+.env*
+.dev.vars*
+*.pem
+*.key
+/node_modules/
+/coverage/
+/outputs/
+/work/
+.DS_Store
+npm-debug.log*

@@ -1,63 +1,41 @@
-# Daily — действующий frontend
+# Daily
 
-Единая PWA для iOS, Android, macOS и Windows с приоритетом iPhone и Mac.
-Адаптивность, Safari/Chrome/Edge, touch/мышь/клавиатура, установка и различия
-платформ — требования ../PLATFORMS.md. Фактические проверки — ../TESTING.md.
+Кроссплатформенная PWA для iOS, Android, macOS и Windows. Приоритет — iPhone
+и Mac. Vanilla JS/HTML/CSS, IndexedDB, Service Worker; GAS + Google Sheets
+для синхронизации. Supabase — будущий этап.
 
-Vanilla JavaScript, HTML и CSS. React, Next.js, Cloudflare, D1, ChatGPT Auth
-и их npm-зависимости вынесены из проекта. Собственный Node.js-сервер
-для пользователей не требуется; backend — ../backend/Code.gs.
+Приложение: https://parfenovmik-hue.github.io/daily/
+Репозиторий: https://github.com/parfenovmik-hue/daily
 
-## Локальная работа
-
-Нужен Node.js >=22.13.0. Сторонних npm-пакетов нет; npm ci необязателен.
-Из этой папки:
+## Работа из корня
+Нужен Node.js >=22.13. Сторонних npm-пакетов нет.
 
 ```sh
-npm run build
+npm run dev
 npm run check
 npm test
-npm run dev
+npm run build
 ```
 
-Preview: http://127.0.0.1:8801 (другой порт: npm run dev -- --port 8802).
-Сервер отдаёт только app-shell из pages/, не исходники, Git или секреты.
-CSP блокирует внешние соединения, включая рабочую синхронизацию. Использовать
-только синтетические данные и отдельный localhost-origin. Обычный localhost
-не регистрирует Service Worker; его логика отдельно проверяется тестом
-с опубликованной Pages-оболочкой. Не включать sync на локальном preview.
+Preview: http://127.0.0.1:8801, без внешней синхронизации. Тесты — только
+синтетические. Подробности web/README.md.
 
-check проверяет синтаксис JS/GAS, локальные импорты и manifest. Старый
-typecheck относился к удалённому TypeScript/Next.js, теперь его нет.
-test сначала собирает pages/, затем запускает тесты без внешних API.
+## Структура
+- web/public/ — действующий frontend.
+- web/scripts/ и web/tests/ — сборка и проверки.
+- web/pages/ — генерируемая оболочка, не редактировать и не коммитить.
+- backend/ — GAS и планы миграций; локальные секреты исключены из Git.
+- private/ — закрытые ключи, backups и архив выведенного из работы Notes.
+- AGENTS.md — общие правила разработчика и Design Lead.
+- DESIGN.md — единый утверждённый дизайн, PRODUCT.md — продукт.
+- PLATFORMS.md, ARCHITECTURE.md, TESTING.md, BACKLOG.md — общие документы.
 
-## Состав
-
-public/daily.js — UI и действия; model.js — модель и merge полей; store.js —
-IndexedDB и очередь изменений; cloud.js — авторизованный GAS transport;
-server-config.js — публичный адрес сервера без ключей; wish-input.js — быстрый
-ввод без ИИ; pickers.js/motion.js — выбор значений и анимации; updater.js —
-безопасное обновление открытой PWA.
-
-scripts/build-pages.mjs копирует актуальные ресурсы и генерирует index.html,
-manifest.webmanifest и sw.js в pages/. Это единственная действующая сборка.
-
-## Данные
-
-Данные сохраняются в IndexedDB daily-independent-v1. Каждое поле имеет
-логические часы и actor; изменения отправляются в GAS и объединяются по полям.
-Приглашение/подключение — личный ключ и короткий одноразовый код устройства.
-Реальные ключи и резервные копии находятся в ../private/, не во frontend.
-Изменения схемы и хранения описывать в ../backend/MIGRATIONS.md.
+Обе постоянные сессии открывают эту папку в Local и работают по очереди.
+При старте проверять Git и документы; при передаче фиксировать результат.
+Папка самостоятельна, зависимости от прежнего каталога Notes нет.
 
 ## Публикация
-
-Frontend — существующий Git-репозиторий в pages/ с remote
-https://github.com/parfenovmik-hue/daily. Backend — отдельная публикация GAS
-по существующей привязке ../backend/.clasp.json, только clasp --user daily.
-Публиковать только по заданию владельца; перед публикацией обновить VERSION
-в public/model.js и CACHE в scripts/build-pages.mjs, выполнить check/test/build
-и проверить обновление SW. Секреты и private/ не включать в коммиты.
-
-Старые команды Sites/Next/Wrangler и их локальные базы находятся во внешнем
-архиве. В текущую сборку они не входят и для запуска не нужны.
+В main хранятся исходники и документация; workflow .github/workflows/pages.yml
+проверяет проект и публикует только web/pages. GAS обновляется отдельно по
+существующей локальной привязке, только clasp --user daily и по заданию.
+Ключи, реальные данные и резервные копии не публикуются.
