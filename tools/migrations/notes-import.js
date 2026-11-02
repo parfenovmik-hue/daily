@@ -1,4 +1,4 @@
-import {dayKey} from './model.js';
+import {dayKey} from '../../web/public/model.js';
 export const IMPORT_DAY='2026-11-02';
 // Source is only read. No connection secrets or unrelated Notes data are kept.
 export async function readNotesOnDevice(){
