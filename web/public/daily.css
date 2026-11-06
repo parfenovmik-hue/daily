@@ -582,3 +582,10 @@ html.sheet-open{overflow:hidden}
 #daily .project-order-controls{display:flex;gap:8px}
 #daily .project-order-controls button{flex:1;min-height:44px}
 #daily .project-order-controls svg{transform:rotate(90deg)}
+
+/* A completed plan is an acknowledgement, not an invitation to refill it. */
+#daily .day-complete{display:flex;align-items:flex-start;gap:14px;margin:20px 0 8px;padding:20px;border-radius:var(--radius-surface);background:var(--soft)}
+#daily .day-complete-mark{display:grid;place-items:center;flex:none;width:36px;height:36px;border:1px solid var(--petrol);border-radius:50%;color:var(--petrol)}
+#daily .day-complete>div{min-width:0}
+#daily .day-complete h3{font-size:20px;line-height:1.35;letter-spacing:-.2px}
+#daily .day-complete p{margin-top:6px;font-size:16px;line-height:1.5;color:var(--quiet)}
