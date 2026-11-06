@@ -42,7 +42,7 @@ export function openPicker(root,{kind,value='',items=[],counts={},height,allowUn
  // A nested picker temporarily isolates both the page and the editor behind it.
  const isolated=[...root.children].filter(el=>el!==overlay&&!el.inert);for(const el of isolated)el.inert=true;
  const panel=overlay.firstElementChild;panel.dataset.pickerKind=kind;const body=overlay.querySelector('.picker-content'),closeButton=overlay.querySelector('.picker-head button');
- if(height){panel.classList.add('composer-picker');panel.style.height=height+'px';}
+ if(height){panel.classList.add('composer-picker');panel.style.height=Math.max(height,kind==='date'?460:0)+'px';}
  let closed=false,timeKeys=null,timePaste=null,initialFocus=closeButton;
  const close=()=>{
   if(closed)return;closed=true;document.removeEventListener('keydown',keys,true);document.removeEventListener('paste',paste,true);overlay.remove();
