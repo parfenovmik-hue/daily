@@ -1,4 +1,4 @@
-export const VERSION='1.5.0';
+export const VERSION='1.5.1';
 export const KINDS=['task','project','goal','shopping','wish'];
 export function dayKey(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 export function addDays(s,n){const[y,m,d]=s.split('-').map(Number);return dayKey(new Date(y,m-1,d+n));}
