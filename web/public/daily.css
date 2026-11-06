@@ -12,7 +12,7 @@
  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;--space-8:32px;
  --page:var(--color-background);--surface:var(--color-surface);--ink:var(--color-text);
  --muted:var(--color-text-secondary);--line:var(--color-border);--petrol:var(--color-accent);--soft:var(--color-soft);
- font-family:var(--font-system)
+ font-family:var(--font-system);
 
  --color-overlay:#18272940;--color-ready-border:#9dbfb9;--color-shadow-faint:#18272913;--color-toast:#2f3639;--color-shadow-dark:#0002;--color-toast-action:#bce6df;--color-shadow-layer:#1827291a;--color-hover:#e9eeee;--color-shadow-control:#18272919;--color-shadow-drag:#18272926;--color-shadow-drag-strong:#18272930;
 }
@@ -414,7 +414,10 @@ html.sheet-open{overflow:hidden}
 #daily .task-row .task-title{grid-column:3;grid-row:1;display:flex;align-items:flex-start;min-width:0;width:100%;height:var(--task-height);min-height:var(--task-height);padding:0;font-size:inherit;line-height:var(--task-line);text-align:left}
 #daily .task-row .task-title:hover{background:transparent}
 #daily .task-row .task-title:focus-visible{outline-offset:0}
-#daily .task-preview{width:100%;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;max-height:var(--task-height);overflow:hidden;white-space:normal;overflow-wrap:anywhere;line-height:var(--task-line)}
+/* Normal block flow is intentional: WebKit puts the float on a separate line
+   inside -webkit-box, pushing the entire title below the two-line clip. */
+#daily .task-preview{position:relative;width:100%;display:block;max-height:var(--task-height);overflow:hidden;white-space:normal;overflow-wrap:anywhere;line-height:var(--task-line)}
+#daily .task-preview.is-truncated::after{content:"…";position:absolute;right:var(--task-project-space);bottom:0;width:1.15em;height:var(--task-line);background:var(--panel);text-align:right}
 #daily .task-meta{grid-column:3;grid-row:1;justify-self:end;display:grid;grid-template-rows:var(--task-line) var(--task-line);width:64px;min-width:0;height:var(--task-height);pointer-events:none}
 #daily .task-meta button{pointer-events:auto}
 #daily .task-row.has-project{--task-project-space:70px}
