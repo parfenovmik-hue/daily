@@ -6,6 +6,6 @@ test('Published Pages worker restores the app and imported modules offline under
  vm.runInNewContext(fs.readFileSync('pages/sw.js','utf8'),context);let work;
  handlers.install({waitUntil:p=>work=p});await work;handlers.activate({waitUntil:p=>work=p});await work;assert.ok(claimed);assert.deepEqual(deleted,['daily-pages-obsolete']);
  let response;handlers.fetch({request:{url:'https://daily.test/daily/',method:'GET',mode:'navigate'},respondWith:p=>response=p});assert.equal(await(await response).text(),'Daily shell');
- for(const name of ['daily.js','store.js','cloud.js','wish-input.js']){handlers.fetch({request:{url:'https://daily.test/daily/'+name+'?v=test',method:'GET'},respondWith:p=>response=p});assert.equal(await(await response).text(),'cached module');}
+ for(const name of ['daily.js','store.js','cloud.js','wish-input.js','ui-view.js','persistence.js']){handlers.fetch({request:{url:'https://daily.test/daily/'+name+'?v=test',method:'GET'},respondWith:p=>response=p});assert.equal(await(await response).text(),'cached module');}
  for(const request of [{url:'https://script.google.com/macros/s/test/exec',method:'POST'},{url:'https://external.example/file',method:'GET'},{url:'https://daily.test/daily/sync',method:'POST'}]){let intercepted=false;handlers.fetch({request,respondWith:()=>intercepted=true});assert.equal(intercepted,false);}
 });
