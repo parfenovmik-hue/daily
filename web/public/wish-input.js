@@ -16,3 +16,5 @@ export function wishMetadataPatch(before,current,card,overwrite=false){
  }
  return patch;
 }
+
+export function wishDisplayTitle(w){if(w.title||w.productTitle)return w.title||w.productTitle;try{const u=new URL(w.url),sku=/\/p\/([a-z0-9]+)/i.exec(u.pathname)?.[1];return u.hostname.replace(/^www\./,'')+(sku?' · '+sku.toUpperCase():'');}catch{return 'Хочу';}}
