@@ -566,3 +566,12 @@ html.sheet-open{overflow:hidden}
 #daily .day-toolbar .plan-title{font-size:16px;line-height:1.4;white-space:nowrap;font-weight:600}
 
 #daily{--petrol:var(--color-accent);--color-focus:var(--color-accent);--color-ready-border:color-mix(in srgb,var(--color-accent) 40%,var(--color-surface))}
+
+/* The day has a timeline first, then stable project contexts. */
+#daily .day-group{margin-top:24px}
+#daily .day-group:first-child{margin-top:16px}
+#daily .day-group>.heading{margin-bottom:8px;align-items:baseline}
+#daily .day-group>.heading h3{min-width:0;overflow-wrap:anywhere}
+#daily .day-group>.heading>span{white-space:nowrap}
+#daily .day-group .day-sheet>.planned-block{margin:0}
+#daily .block-timed-hint{padding:0 0 10px;font-size:12px;line-height:1.5;color:var(--quiet)}
