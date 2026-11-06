@@ -10,6 +10,10 @@
     "dev": "npm --prefix web run dev --",
     "build": "npm --prefix web run build",
     "check": "npm --prefix web run check",
-    "test": "npm --prefix web test"
+    "test": "npm --prefix web test",
+    "browser:start": "npm --prefix services/browser-loader start",
+    "browser:read": "npm --prefix services/browser-loader run read --",
+    "browser:stop": "npm --prefix services/browser-loader run stop",
+    "browser:test": "npm --prefix services/browser-loader test"
   }
 }
