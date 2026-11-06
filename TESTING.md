@@ -550,3 +550,16 @@ reload сохраняет корректное состояние, будущи�
 Реальные данные/внешний sync не использовались. Backend, модель и версия1.8.5
 не менялись. Изменение не опубликовано: основной разработчик готовит следующий
 VERSION/CACHE и выпуск по поручению владельца.
+
+## Linux browser-loader: подготовка · 7 ноября 2026
+Frontend/GAS/schema/данные не менялись; VERSION/CACHE остались 1.8.6.
+check и 63 теста Daily прошли. 6 тестов сервиса прошли: extraction, policy,
+Linux-конфигурация, HTTP auth/Origin/JSON/body/concurrency/SIGTERM.
+doctor на Mac arm64 Node24/Chrome156 успешно запустил browser с chromiumSandbox=true.
+Отдельный temporary instance на 8847/state в /tmp успешно прочитал контрольную
+книгу (название/фото/51.77 GBP, 3136ms), после чего остановлен штатным CLI.
+Все runtime-данные и секреты исключены из коммита.
+Linux/systemd/egress/магазины с IP VPS не проверены: локального Linux/Docker нет,
+SSH и удалённых изменений не было. Приёмочный план — services/browser-loader/deploy/LINUX.md.
+Шаблон unit требует проверки systemd-analyze verify и реального sandbox на целевом Linux.
+Не объявлять готовым для публичного доступа до сетевой изоляции и backend-auth.

@@ -1,0 +1,48 @@
+# Template only: installed/owned by root through the shared server chat.
+[Unit]
+Description=Daily isolated browser reader
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=daily-browser
+Group=daily-browser
+WorkingDirectory=/opt/daily-browser
+Environment=NODE_ENV=production
+Environment=DAILY_READER_STATE_DIR=/var/lib/daily-browser
+Environment=PLAYWRIGHT_BROWSERS_PATH=/var/cache/daily-browser/ms-playwright
+Environment=HOME=/var/lib/daily-browser
+Environment=XDG_CACHE_HOME=/var/cache/daily-browser
+EnvironmentFile=/etc/daily-browser/service.env
+ExecStart=/usr/bin/node /opt/daily-browser/server.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+KillMode=control-group
+MemoryHigh=1536M
+MemoryMax=2G
+MemorySwapMax=0
+CPUQuota=100%
+TasksMax=256
+UMask=0077
+StateDirectory=daily-browser
+StateDirectoryMode=0700
+CacheDirectory=daily-browser
+CacheDirectoryMode=0700
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+# Do not add RestrictNamespaces or MemoryDenyWriteExecute: Chromium needs namespaces/JIT.
+
+[Install]
+WantedBy=multi-user.target
