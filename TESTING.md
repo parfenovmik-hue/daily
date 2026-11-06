@@ -571,3 +571,12 @@ Market/Lamoda: 403. Not independently repeated with admin access here.
 Project chat verified SSH user daily-browser, service active, autostart disabled.
 Composite SSH command exit1 was expected from systemctl is-enabled=disabled.
 No server modifications, restarts or publication.
+
+## Supabase foundation applied - 2026-11-07
+New project inspected empty. Local PGlite tests executed migration SQL with
+synthetic auth/storage schemas and actual RLS; no synthetic cloud rows created.
+Hosted RLS/ACL verified via catalog inspection; anonymous REST select and
+daily_sync both401. One requested owner account/member exists, no Daily records
+imported. daily-images private,4 policies, retention hourly active. Email flow,
+client provider, actual file delivery and data cutover are not yet tested.
+Current frontend1.8.6 and GAS unchanged; CLI access credentials not committed.

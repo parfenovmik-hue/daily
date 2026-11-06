@@ -1,0 +1,44 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs/promises';
+import {PGlite} from '@electric-sql/pglite';
+const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222222222',C='33333333-3333-4333-8333-333333333333';
+const cell=(value,clock=10,actor='a')=>({value,clock,actor});
+const task=(id='task_one')=>({id,kind:'task',fields:{title:cell('Synthetic task'),deleted:cell(false),date:cell('2026-11-07')}});
+test('PostgreSQL RLS, atomic sync, Lamport merge and irreversible retention on synthetic accounts',async()=>{
+ const db=new PGlite();try{
+ await db.exec(`create role anon;create role authenticated;create role service_role;
+ create schema auth;create table auth.users(id uuid primary key);
+ create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ grant usage on schema auth to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;`);
+ await db.exec(await fs.readFile(new URL('../migrations/202611070001_daily_sync.sql',import.meta.url),'utf8'));
+ await db.exec(`create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+ create table storage.objects(id bigint generated always as identity,bucket_id text,name text);
+ alter table storage.objects enable row level security;grant usage on schema storage to authenticated;
+ grant select,insert,update,delete on storage.objects to authenticated;grant usage on all sequences in schema storage to authenticated;`);
+ await db.exec(await fs.readFile(new URL('../migrations/202611070002_private_images.sql',import.meta.url),'utf8'));
+ await db.query('insert into auth.users(id) values($1),($2),($3)',[A,B,C]);
+ await db.query("insert into public.daily_members(user_id,display_name) values($1,'A'),($2,'B')",[A,B]);
+ const as=async id=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role authenticated');};
+ const sync=async changes=>(await db.query('select public.daily_sync($1::jsonb) result',[JSON.stringify(changes)])).rows[0].result;
+ await as(A);let result=await sync([task()]);assert.equal(result.records.length,1);assert.equal(result.user.id,A);
+ await db.query("insert into storage.objects(bucket_id,name) values('daily-images',$1)",[A+'/own.webp']);
+ await assert.rejects(db.query("insert into storage.objects(bucket_id,name) values('daily-images',$1)",[B+'/forbidden.webp']),/row-level security/);
+ await as(B);assert.equal((await db.query('select * from storage.objects')).rows.length,0);
+ await db.query("insert into storage.objects(bucket_id,name) values('daily-images',$1)",[B+'/own.webp']);
+ assert.equal((await sync([])).records.length,0);assert.equal((await db.query('select * from public.daily_records')).rows.length,0);
+ const other=task();other.fields.title=cell('B only');assert.equal((await sync([other])).records[0].fields.title.value,'B only');
+ await assert.rejects(db.query("insert into public.daily_records(owner_id,id,kind,fields) values($1,'task_hack','task','{}')",[A]),/permission denied/);
+ await as(C);await assert.rejects(sync([]),/Invitation required/);
+ await as(A);assert.equal((await sync([])).records[0].fields.title.value,'Synthetic task');const old=task();old.fields.title=cell('Stale',9);assert.equal((await sync([old])).records[0].fields.title.value,'Synthetic task');
+ const newer=task();newer.fields.title=cell('New',10,'z');assert.equal((await sync([newer])).records[0].fields.title.value,'New');
+ const bad=task('task_bad');bad.fields.unknown=cell('not allowed');await assert.rejects(sync([task('task_atomic'),bad]),/Invalid record/);assert.equal((await sync([])).records.length,1);
+ const invalid=task();invalid.fields.date=cell('2026-02-30');await assert.rejects(sync([invalid]),/Invalid record/);
+ const removed=task();removed.fields.deleted=cell(true,20);await sync([removed]);
+ const undone=task();undone.fields.deleted=cell(false,21);assert.equal((await sync([undone])).records[0].fields.deleted.value,false);
+ removed.fields.deleted=cell(true,22);await sync([removed]);
+ await db.exec('reset role');await db.exec("update public.daily_records set retired_at=now()-interval '49 hours'");
+ await as(A);undone.fields.deleted=cell(false,999);result=await sync([undone]);assert.deepEqual(result.purged,['task_one']);assert.equal(result.records.length,0);
+ await assert.rejects(db.query('select public.daily_purge_deleted()'),/permission denied/);
+ await db.exec('reset role');await db.query('update public.daily_members set active=false where user_id=$1',[B]);await as(B);await assert.rejects(sync([]),/Invitation required/);assert.equal((await db.query('select * from public.daily_records')).rows.length,0);assert.equal((await db.query('select * from storage.objects')).rows.length,0);
+ await db.exec('reset role;set role anon');await assert.rejects(db.query("select public.daily_sync('[]')"),/permission denied/);
+ }finally{await db.close();}
+});

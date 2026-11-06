@@ -1,0 +1,19 @@
+name: Supabase SQL checks
+on:
+  push:
+    paths: ['backend/supabase/**', '.github/workflows/supabase-checks.yml']
+  pull_request:
+    paths: ['backend/supabase/**', '.github/workflows/supabase-checks.yml']
+permissions:
+  contents: read
+jobs:
+  sql:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm --prefix backend/supabase ci --ignore-scripts
+      - run: npm --prefix backend/supabase test

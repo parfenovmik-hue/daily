@@ -98,3 +98,12 @@ Active, loopback-only, autostart disabled. Control extraction works; Market/Lamo
 return 403. No frontend/GAS/Supabase/OpenAI integration yet. Project SSH identity
 and active/disabled states verified without server changes. See deploy/LINUX.md
 in services/browser-loader for actual deployment differences and QA boundaries.
+
+## Supabase foundation - 2026-11-07
+Project xvowdgupwymfukhuzkqm now has invite-only Auth configuration, approved
+membership, owner-scoped Lamport records and transactional sync RPC. Private
+image storage uses per-owner path RLS. Retention hourly; original48h behavior
+preserved. Only requested owner provisioned, no real records imported.
+Published client still uses GAS/Sheets. Supabase transport/login/cutover remain
+separate pending work; browser service is still unconnected to the PWA.
+Local SQL tests and staged migration instructions live in backend/supabase/.

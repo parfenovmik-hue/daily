@@ -72,3 +72,22 @@ script.external_request требует подтверждения владель
 независимо от разрешения, ошибки карточек возвращаются с кодом WISH.
 Предыдущий GAS v6 сохранён в истории; разовый установщик v7 настроил ключ,
 v8 добавил API. До подтверждения Google сквозной API считается незавершённым.
+
+## Supabase stage 1 - preparation (2026-11-07)
+Owner created project xvowdgupwymfukhuzkqm and authorized configuration.
+Local SQL and synthetic PostgreSQL tests: backend/supabase/README.md.
+No hosted migration/import/client cutover has been executed at this point.
+Preserve IDs, local dirty edits, Lamport merge and retirement/erasure semantics.
+Cloud application awaits CLI authorization and target inspection.
+
+### Applied stage 1 and storage (2026-11-07)
+Confirmed target was empty; original auth config and preflight saved privately.
+Applied migrations 202611070001_daily_sync and 202611070002_private_images.
+Signup disabled; exact Pages redirect configured. Owner Auth account/member
+created without sending email; Kate untouched. Private image bucket and four
+per-owner Storage policies enabled. Retention scheduled hourly at minute7.
+Hosted ACL/RLS verified, anonymous REST read/RPC returned401. Authenticated
+owner RPC executed in rollback transaction without test records. Local PGlite
+suite covers cross-user isolation, duplicate IDs per user, stale-clock/tie merges,
+invalid-batch rollback, revocation, Storage paths and expired-tombstone rejection.
+Frontend/GAS and real data have not switched; auth email flow not tested yet.

@@ -13,3 +13,6 @@ node_modules/
 coverage/
 .DS_Store
 *.log
+
+# Supabase CLI local cache (project linkage is not a migration)
+/supabase/.temp/
