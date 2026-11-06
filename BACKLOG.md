@@ -91,3 +91,12 @@ Firecrawl не подключается. Нужна проверка карто�
 ## Вишлист — пересборка
 Сначала получить новую логику владельца, затем подобрать инструменты и спроектировать
 раздел. Старый интерфейс и авторазбор приостановлены; не включать их автоматически.
+
+## After Supabase owner rollout
+- Confirm real owner password/recovery flow from installed iPhone and Mac.
+- Configure custom SMTP before inviting non-team users; default provider has
+  recipient/rate restrictions and rejects template customization on free tier.
+  Keep current Pages address; do not require buying an app domain.
+- After devices migrate, retire owner legacy bridge/setup endpoints and remove
+  its Script Property credential. Preserve Kate's GAS until separately migrated.
+- Remove the frozen owner Google sheet snapshot after an agreed rollback period.

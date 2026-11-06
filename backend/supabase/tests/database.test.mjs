@@ -15,6 +15,7 @@ test('PostgreSQL RLS, atomic sync, Lamport merge and irreversible retention on s
  alter table storage.objects enable row level security;grant usage on schema storage to authenticated;
  grant select,insert,update,delete on storage.objects to authenticated;grant usage on all sequences in schema storage to authenticated;`);
  await db.exec(await fs.readFile(new URL('../migrations/202611070002_private_images.sql',import.meta.url),'utf8'));
+ await db.exec(await fs.readFile(new URL('../migrations/202611070003_legacy_bridge.sql',import.meta.url),'utf8'));
  await db.query('insert into auth.users(id) values($1),($2),($3)',[A,B,C]);
  await db.query("insert into public.daily_members(user_id,display_name) values($1,'A'),($2,'B')",[A,B]);
  const as=async id=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role authenticated');};
@@ -39,6 +40,11 @@ test('PostgreSQL RLS, atomic sync, Lamport merge and irreversible retention on s
  await as(A);undone.fields.deleted=cell(false,999);result=await sync([undone]);assert.deepEqual(result.purged,['task_one']);assert.equal(result.records.length,0);
  await assert.rejects(db.query('select public.daily_purge_deleted()'),/permission denied/);
  await db.exec('reset role');await db.query('update public.daily_members set active=false where user_id=$1',[B]);await as(B);await assert.rejects(sync([]),/Invitation required/);assert.equal((await db.query('select * from public.daily_records')).rows.length,0);assert.equal((await db.query('select * from storage.objects')).rows.length,0);
+ await as(A);await assert.rejects(db.query('select public.daily_legacy_sync($1)',[A]),/permission denied/);
+ await db.exec('reset role;set role service_role');const imported=task('task_import');
+ const legacy=await db.query('select public.daily_import_legacy($1,$2,$3::jsonb) result',[A,'a'.repeat(32),JSON.stringify([imported])]);assert.equal(legacy.rows[0].result.records.length,1);
+ await db.query('select public.daily_import_legacy($1,$2,$3::jsonb)',[A,'a'.repeat(32),JSON.stringify([imported])]);
+ await as(A);assert.equal((await sync([])).records.length,1);assert.deepEqual((await sync([])).purged,['task_one']);
  await db.exec('reset role;set role anon');await assert.rejects(db.query("select public.daily_sync('[]')"),/permission denied/);
  }finally{await db.close();}
 });

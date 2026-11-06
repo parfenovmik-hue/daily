@@ -1,0 +1,5 @@
+# Upload only the Apps Script runtime, never SQL, tests or dependencies.
+**/**
+!Code.gs
+!InitialSetup.gs
+!appsscript.json

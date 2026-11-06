@@ -1,6 +1,6 @@
 {
   "name": "daily",
-  "version": "1.8.6",
+  "version": "1.9.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -11,5 +11,9 @@
     "dev": "node scripts/build-pages.mjs && node scripts/preview.mjs",
     "test": "node scripts/build-pages.mjs && node --test tests/*.test.mjs",
     "check": "node scripts/check.mjs"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "2.119.0",
+    "esbuild": "0.28.2"
   }
 }

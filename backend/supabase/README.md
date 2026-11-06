@@ -73,3 +73,34 @@ committed. Signup is disabled, email provider remains enabled; site URL and exac
 redirect are the existing GitHub Pages URL. Only the requested owner Auth user
 and membership were created, without email confirmation or sending any message.
 Kate has not been provisioned/migrated. Application login and cutover are pending.
+
+## Owner cutover - Daily 1.9.0
+Migration 202611070003_legacy_bridge applied; GAS updated at the existing URL to
+version16. Owner snapshot exported/imported under ScriptLock, then a server-only
+Supabase route activated. Verified116 live records and21 erased markers;137
+source IDs preserved, all non-erased field versions dominate the snapshot.
+Old clients keep their legacy identity and now sync to the same Supabase owner.
+Google owner sheet is a frozen rollback snapshot, not a second writable master.
+Kate remains on GAS with no link/provisioning. Service-role key only in Script
+Properties, never frontend. Temporary owner-only setup/export actions require
+the existing owner's key. Retire them and the bridge after all devices move.
+
+Frontend uses official SDK2.119.0 bundled locally via esbuild0.28.2 (no CDN).
+Email/password login; invite/recovery callbacks establish a session, remove URL
+tokens and open password setup. Explicit profile confirmation, local backup and
+legacy hello identity proof prevent mixing different users' device records.
+Dirty edits and purged IDs survive the switch; Supabase RPC uses a captured
+access token so another tab cannot redirect an in-flight write to another user.
+
+Hosted free tier rejected changing email templates with default SMTP (HTTP400).
+No paid upgrade, custom SMTP or new domain configured. Proposed OTP template
+was not deployed; login uses email/password and standard recovery/invite email.
+Owner explicitly requested one invitation, accepted by Supabase; no other
+messages sent by the agent. Password chosen by owner only.
+
+QA: npm test; npm --prefix backend/supabase test; local browser fixture
+web/tests/browser/supabase-auth.mjs (preview8812, browser-loader deps installed).
+All external API calls in that fixture are intercepted; no real auth/data/emails.
+Real owner password login and standalone iPhone flow need owner confirmation.
+Rollback frontend is compatible with GAS16 bridge; do not roll backend back to
+Sheets writes after new Supabase edits without an explicit reverse-data merge.

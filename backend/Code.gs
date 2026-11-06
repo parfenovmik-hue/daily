@@ -10,13 +10,16 @@ function doPost(e) {
     if(body.action==='pair-redeem')return dailyJSON_(dailyRedeem_(body.code));
     const user=dailyAuth_(body.key);
     if(!user)return dailyJSON_({ok:false,code:'AUTH',error:'Код подключения не найден или отозван'});
+    if(body.action==='supabase-export')return dailySupabaseExport_(user);
+    if(body.action==='supabase-migrate')return dailySupabaseMigrate_(user,body);
     if(body.action==='pair-create')return dailyJSON_(dailyPair_(user,body.key));
     if(body.action==='wish-card'){try{return dailyJSON_({ok:true,protocol:1,user:{id:user.id,name:user.name},card:dailyWishEnrich_(user,body)});}catch(error){return dailyJSON_({ok:false,code:error.code||'WISH',error:/external_request|permission|разрешени/i.test(String(error.message))?'Владелец должен разрешить Daily внешние запросы в Google Apps Script. Запись сохранена.':error.message||'Не удалось получить данные товара.'});}}
-    if(body.action==='hello')return dailyJSON_({ok:true,user:{id:user.id,name:user.name},protocol:1});
+    if(body.action==='hello'){const link=dailySupabaseLink_(user);return dailyJSON_({ok:true,user:{id:user.id,name:user.name},protocol:1,supabaseUserId:link&&link.userId||''});}
     const changes=body.changes||[];
     if(!Array.isArray(changes)||changes.length>100||!changes.every(dailyValidRecord_))throw Error('Некорректные записи');
     const lock=LockService.getScriptLock();if(!lock.tryLock(15000))return dailyJSON_({ok:false,code:'BUSY',error:'Сервер занят. Повторим синхронизацию.'});
     try {
+      const link=dailySupabaseLink_(user);if(link){const remote=dailySupabasePost_(link,'daily_legacy_sync',{p_owner:link.userId,p_changes:changes});if(remote.user.id!==link.userId)throw Error('Аккаунт сервера не совпадает');remote.user={id:user.id,name:user.name};remote.supabaseUserId=link.userId;return dailyJSON_(remote);}
       const sheet=dailySheet_(user),records=dailyReadRecords_(sheet),before=JSON.stringify(Array.from(records.values())),accepted=[],now=Date.now();
       for(const r of changes){const old=records.get(r.id);if(old&&old.kind!==r.kind)throw Error('Конфликт типа записи');accepted.push(r.id);if(old&&old.erasedAt)continue;const merged={id:r.id,kind:r.kind,fields:dailyMerge_(old&&old.fields||{},r.fields)};if(old&&old.retiredAt&&old.fields.deleted&&old.fields.deleted.value&&merged.fields.deleted&&merged.fields.deleted.value)merged.retiredAt=old.retiredAt;records.set(r.id,merged);}
       for(const [id,r] of records)records.set(id,dailyApplyRetention_(r,now));
@@ -214,4 +217,32 @@ function dailyWishSameProduct_(url,source){
 function dailyWishEvidenceImage_(url){
  if(/^https:\/\/(?:[^/]+\.)?yastatic\.net(?:[/:]|$)/i.test(url))return false;
  return /\.(?:jpe?g|png|webp|avif)(?:[?#]|$)/i.test(url)||/^https:\/\/avatars\.(?:mds|mlt)\.yandex\.net\/get-(?:mpic|marketpic|mpec|market-avatars)\//i.test(url);
+}
+
+// Temporary migration controls: only the existing, authenticated owner's key.
+const DAILY_SUPABASE_SETUP_OWNER="aeea629cc9c5e727344a4a64308d4970";
+function dailySupabaseLink_(user){const raw=PropertiesService.getScriptProperties().getProperty('daily.supabase.'+user.id);return raw?JSON.parse(raw):null;}
+function dailySupabasePost_(link,rpc,payload){
+ const key=link.secret||PropertiesService.getScriptProperties().getProperty('DAILY_SUPABASE_SERVICE_KEY');
+ if(link.url!=='https://xvowdgupwymfukhuzkqm.supabase.co'||!key)throw Error('Миграция сервера не настроена');
+ const response=UrlFetchApp.fetch(link.url+'/rest/v1/rpc/'+rpc,{method:'post',contentType:'application/json',headers:{apikey:key,Authorization:'Bearer '+key},payload:JSON.stringify(payload),muteHttpExceptions:true});
+ if(response.getResponseCode()!==200)throw Error('Supabase временно недоступен. Изменения остаются на устройстве.');
+ const data=JSON.parse(response.getContentText());if(!data.ok||data.protocol!==1||!data.user||!Array.isArray(data.records)||!Array.isArray(data.purged))throw Error('Некорректный ответ Supabase');return data;
+}
+function dailySupabaseExport_(user){
+ if(user.id!==DAILY_SUPABASE_SETUP_OWNER)throw Error('Только владелец может выполнить перенос');
+ const lock=LockService.getScriptLock();if(!lock.tryLock(15000))throw Error('Сервер занят');
+ try{return dailyJSON_({ok:true,protocol:1,user:{id:user.id,name:user.name},records:Array.from(dailyReadRecords_(dailySheet_(user)).values())});}finally{lock.releaseLock();}
+}
+function dailySupabaseMigrate_(user,body){
+ if(user.id!==DAILY_SUPABASE_SETUP_OWNER)throw Error('Только владелец может выполнить перенос');
+ if(body.url!=='https://xvowdgupwymfukhuzkqm.supabase.co'||!/^[-a-zA-Z0-9_.]{40,3000}$/.test(body.serviceKey||'')||!/^[-a-f0-9]{36}$/.test(body.userId||''))throw Error('Некорректные параметры миграции');
+ const lock=LockService.getScriptLock();if(!lock.tryLock(15000))throw Error('Сервер занят');
+ try{
+  const records=Array.from(dailyReadRecords_(dailySheet_(user)).values()),link={url:body.url,userId:body.userId};
+  const remote=dailySupabasePost_(Object.assign({secret:body.serviceKey},link),'daily_import_legacy',{p_owner:link.userId,p_legacy_id:user.id,p_records:records});
+  if(remote.user.id!==link.userId)throw Error('Аккаунт сервера не совпадает');
+  const props=PropertiesService.getScriptProperties();props.setProperty('DAILY_SUPABASE_SERVICE_KEY',body.serviceKey);props.setProperty('daily.supabase.'+user.id,JSON.stringify(link));
+  return dailyJSON_({ok:true,protocol:1,user:{id:user.id,name:user.name},supabaseUserId:link.userId,imported:records.length,records:remote.records.length,purged:remote.purged.length});
+ }finally{lock.releaseLock();}
 }

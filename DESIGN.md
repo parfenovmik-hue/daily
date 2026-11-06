@@ -503,3 +503,11 @@ float-резерв метаданных внутри display:-webkit-box зан�
 Учитываются унаследованные даты шагов блоков. Готовый блок остаётся доступным
 для ручного закрытия, «Сделано» сохраняется. Очередь и прошлые незавершённые
 не считаются обязательствами сегодняшнего плана и остаются отдельными разделами.
+
+## Authentication - 7 November 2026
+Reuse existing opaque sheet/field/primary/secondary components. Email and
+password form, a password setup/recovery action and a secondary legacy-code
+connection. No technical provider names/keys in the user flow. Recovery/invite
+opens password setup; next screen confirms the target account before profile
+connection. Different users keep separate local records. Layout visually
+checked440px and overflow checked320/440/1440 using synthetic data.

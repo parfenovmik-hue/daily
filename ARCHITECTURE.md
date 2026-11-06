@@ -107,3 +107,15 @@ preserved. Only requested owner provisioned, no real records imported.
 Published client still uses GAS/Sheets. Supabase transport/login/cutover remain
 separate pending work; browser service is still unconnected to the PWA.
 Local SQL tests and staged migration instructions live in backend/supabase/.
+
+## Daily 1.9.0 - active Supabase sync
+Owner now uses Supabase as authority. Old devices go through authenticated
+GAS16 -> service-only legacy RPC; new email/password clients call daily_sync
+with the captured user JWT. Kate remains on GAS. No independent dual writes.
+Google owner sheet is a frozen migration backup. Existing PWA URL unchanged.
+Frontend build now installs official Supabase JS SDK + esbuild; browser runtime
+is still static JS/HTML/CSS, no own frontend server/SSR or external SDK CDN.
+Session refresh is SDK-managed; user profile binding and response validation
+remain app-owned. Auth callback fragments are consumed and removed from URL.
+Switching providers backs up local data and requires identity proof/confirmation.
+Full rollback caveat and operational evidence: backend/supabase/README.md.

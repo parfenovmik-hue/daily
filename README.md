@@ -1,14 +1,16 @@
 # Daily
 
 Кроссплатформенная PWA для iOS, Android, macOS и Windows. Приоритет — iPhone
-и Mac. Vanilla JS/HTML/CSS, IndexedDB, Service Worker; GAS + Google Sheets
-для синхронизации. Supabase — будущий этап.
+и Mac. Vanilla JS/HTML/CSS, IndexedDB, Service Worker. Основной аккаунт
+перенесён в Supabase; прежний GAS остаётся мостом для старых устройств и
+backend для ещё не перенесённых пользователей.
 
 Приложение: https://parfenovmik-hue.github.io/daily/
 Репозиторий: https://github.com/parfenovmik-hue/daily
 
 ## Работа из корня
-Нужен Node.js >=22.13. Frontend не требует сторонних npm-пакетов.
+Нужен Node.js >=22.13. Для сборки frontend нужны официальный Supabase SDK и esbuild (`npm --prefix web ci`).
+Runtime Node.js для опубликованной PWA не нужен.
 Отдельный экспериментальный браузерный сервис использует Playwright.
 
 ```sh

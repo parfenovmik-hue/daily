@@ -580,3 +580,19 @@ daily_sync both401. One requested owner account/member exists, no Daily records
 imported. daily-images private,4 policies, retention hourly active. Email flow,
 client provider, actual file delivery and data cutover are not yet tested.
 Current frontend1.8.6 and GAS unchanged; CLI access credentials not committed.
+
+## Daily 1.9.0 - owner Supabase migration
+GAS16 published at existing URL; full source snapshot saved.137 source IDs
+imported under lock (116 records +21 erased IDs). After-state field versions
+verified against backup; no synthetic cloud data inserted; Kate unchanged.
+SQL tests include service-only bridge/import and idempotency. GAS test verifies
+only linked owner routes to RPC, errors never fall back to Sheets.
+Browser fixture intercepts all external calls: password login, profile apply,
+offline save/upload, reload, mismatched session guard, recovery callback/password
+setup and URL-token cleanup pass. Widths320/440/1440 checked, stable440 PNG viewed.
+67 JS/GAS tests and local PostgreSQL suite pass. Actual owner password and
+physical installed iPhone not tested by agent. Default SMTP template update
+rejected400; no template/paid plan applied, email/password implemented instead.
+clasp initially included nested test dependencies and push was rejected; a
+tracked whitelist now permits only Code.gs/InitialSetup.gs/appsscript.json.
+Successful push/deploy contained only those3 runtime files.

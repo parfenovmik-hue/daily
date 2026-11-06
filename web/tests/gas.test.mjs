@@ -22,3 +22,13 @@ test('Task symbols round-trip alongside legacy importance without altering old r
  assert.equal(s.post(s.b).records.length,0);
  for(const value of [-1,'2',null])assert.equal(s.post(s.a,[record(value)]).ok,false);
  });
+
+test('Migrated GAS clients route only their own changes to Supabase and keep legacy identity',()=>{
+ const s=server(),uid='11111111-1111-4111-8111-111111111111',props=s.context.PropertiesService.getScriptProperties();
+ props.setProperty('daily.supabase.'+'a'.repeat(32),JSON.stringify({url:'https://xvowdgupwymfukhuzkqm.supabase.co',userId:uid}));props.setProperty('DAILY_SUPABASE_SERVICE_KEY','test-server-secret');
+ let request;s.context.UrlFetchApp={fetch:(url,options)=>{request={url,options};return{getResponseCode:()=>200,getContentText:()=>JSON.stringify({ok:true,protocol:1,user:{id:uid},records:[],accepted:['task_one'],purged:[]})};}};
+ const out=s.post(s.a,[record('one',{title:'Synthetic'})]);assert.equal(out.ok,true);assert.equal(out.user.id,'a'.repeat(32));assert.equal(out.supabaseUserId,uid);assert.equal(JSON.parse(request.options.payload).p_owner,uid);assert.equal(s.stats().writes,0);assert.equal(s.stats().reads,0);
+ assert.equal(s.post(s.b).records.length,0);assert.equal(s.stats().writes,0);
+ assert.equal(s.post(s.b,[],'supabase-export').ok,false);
+ s.context.UrlFetchApp.fetch=()=>({getResponseCode:()=>503});assert.equal(s.post(s.a).ok,false);assert.equal(s.stats().writes,0);
+});

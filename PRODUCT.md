@@ -335,3 +335,10 @@ Checkbox выполняет задачу непосредственно из с�
 Решение владельца: сохраняем https://parfenovmik-hue.github.io/daily/ .
 Постоянный собственный домен не выбираем и не покупаем. Supabase и обработчик
 на VPS не требуют переноса frontend. Более ранняя рекомендация купить домен отменена.
+
+## Login and sync transition - 7 November 2026
+Only the owner migrates now; Kate stays on the previous connection.
+Email/password login with invite/recovery password setup. No automatic account
+creation. Existing devices keep working via a temporary server bridge.
+Custom email template/sender postponed: hosted free/default SMTP rejected template
+changes; no upgrade or domain purchase authorized or performed.

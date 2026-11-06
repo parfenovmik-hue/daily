@@ -91,3 +91,14 @@ owner RPC executed in rollback transaction without test records. Local PGlite
 suite covers cross-user isolation, duplicate IDs per user, stale-clock/tie merges,
 invalid-batch rollback, revocation, Storage paths and expired-tombstone rejection.
 Frontend/GAS and real data have not switched; auth email flow not tested yet.
+
+## Daily 1.9.0 - owner cutover
+Closed service-role-only legacy import/sync RPCs applied. Existing GAS16 now
+routes the migrated owner to Supabase while preserving old key identities.
+Full pre-cutover snapshot and after-state are private/supabase-admin.
+137 source IDs:116 records +21 erasures, field-version dominance verified.
+Kate unchanged. Google owner sheet preserved as rollback snapshot; not written
+by owner sync after cutover. Hourly retention remains for other GAS accounts.
+Supabase email/password client and locally bundled SDK preserve existing
+IndexedDB profile on verified identity match, otherwise open a separate profile.
+Pending edits keep their original clocks/actors, purged markers remain final.
