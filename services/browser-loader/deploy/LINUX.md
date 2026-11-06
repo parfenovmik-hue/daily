@@ -103,3 +103,28 @@ server в Интернет. Нужен отдельный backend/gateway: пр�
 Сначала не включать автозапуск, пока проверки и rollback не выполнены.
 
 Источники установки: https://playwright.dev/docs/browsers ; sandbox: https://playwright.dev/docs/docker .
+
+## Deployment report accepted: 2026-11-07
+The preparation-only status above is historical. The shared server chat deployed
+commit 2b382b6 on Ubuntu 24.04 x86_64, Node 24.22.2, Chromium 156/build1248.
+Service is active, loopback-only, autostart disabled. No PWA/backend integration.
+
+Reported checks: 6 Linux tests, 3 successful control extractions, real Chromium
+sandbox, UID egress, redirects/rebinding, idle cleanup, stop/restart and deadline.
+Control-run memory peak about 305 MiB; not a guarantee for arbitrary sites.
+Yandex Market and Lamoda returned 403. Product retrieval remains unresolved.
+
+Actual unit differs from the template: Node lives at /opt/daily-browser-runtime/node;
+Chromium is root-owned; CacheDirectory was removed; XDG_CACHE_HOME points to
+/var/lib/daily-browser/cache. Keep these changes on update, do not overwrite
+the installed unit with this initial template. Dedicated nftables UID filtering
+and the approved exact-path AppArmor userns exception are managed by server chat.
+
+Project SSH verified as daily-browser: service active, enabled state disabled.
+No changes or restarts performed by this project chat. Its sudo allows only
+start/stop/restart of daily-browser.service. Code/unit/browser updates require
+server chat. API smoke from that UID is intentionally blocked by outbound
+loopback filtering: do not relax egress to make the CLI work. API QA currently
+requires the shared server chat. Do not expose raw browser API publicly.
+Full evidence: server-operations/daily-deploy/RESULT_2026-11-07.md in the shared
+server workspace; contains access details, constraints and rollback.

@@ -91,3 +91,10 @@ services/browser-loader — Node.js + Playwright, loopback HTTP с локаль�
 Loopback API предназначен только будущему backend, не прямому вызову PWA.
 Перед произвольными URL нужны отдельные egress-ограничения: URL/DNS policy
 в приложении сама по себе не закрывает DNS rebinding/весь трафик браузера.
+
+## Linux deployment report accepted: 2026-11-07
+Shared server chat deployed browser-loader 2b382b6 in isolated Linux service.
+Active, loopback-only, autostart disabled. Control extraction works; Market/Lamoda
+return 403. No frontend/GAS/Supabase/OpenAI integration yet. Project SSH identity
+and active/disabled states verified without server changes. See deploy/LINUX.md
+in services/browser-loader for actual deployment differences and QA boundaries.

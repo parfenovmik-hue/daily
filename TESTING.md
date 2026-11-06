@@ -563,3 +563,11 @@ Linux/systemd/egress/магазины с IP VPS не проверены: лок�
 SSH и удалённых изменений не было. Приёмочный план — services/browser-loader/deploy/LINUX.md.
 Шаблон unit требует проверки systemd-analyze verify и реального sandbox на целевом Linux.
 Не объявлять готовым для публичного доступа до сетевой изоляции и backend-auth.
+
+## Server report accepted: 2026-11-07
+Shared server report RESULT_2026-11-07.md records 6 Linux tests, 3 control
+extractions, sandbox/egress/rebinding/redirect and process lifecycle checks.
+Market/Lamoda: 403. Not independently repeated with admin access here.
+Project chat verified SSH user daily-browser, service active, autostart disabled.
+Composite SSH command exit1 was expected from systemctl is-enabled=disabled.
+No server modifications, restarts or publication.
