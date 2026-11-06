@@ -39,8 +39,10 @@ Daily — единая PWA для iOS, Android, macOS и Windows. Safari, Chrome
 ## Действующая архитектура
 Vanilla JS PWA: web/public/. Сборка: web/scripts/build-pages.mjs → web/pages/.
 Frontend опубликован на https://parfenovmik-hue.github.io/daily/.
-Backend: backend/Code.gs, Google Apps Script + Google Sheets. Проверенная
-личность — пользователь GAS с личным ключом; локальный UUID не авторизация.
+Backend: основной аккаунт перенесён в Supabase Auth/Postgres; backend/supabase/ —
+миграции и RLS-тесты. backend/Code.gs (GAS16) остаётся мостом для старых устройств
+владельца и backend для ещё не перенесённой Kate. Локальный UUID не авторизация.
+Не создавать независимые записи в GAS и Supabase: для владельца источник — Supabase.
 ChatGPT Auth, Sites, Next.js, React, Cloudflare/D1 не используются. Их файлы
 сохранены только в закрытом резервном архиве private/. Не возвращать
 их команды, зависимости или старую публикацию в активный проект.
@@ -51,8 +53,11 @@ ChatGPT Auth, Sites, Next.js, React, Cloudflare/D1 не используются
 Отложенные функции: BACKLOG.md. Текущие проверки: TESTING.md, web/README.md.
 
 ## Проверки
-Из корня: npm run check; npm test; npm run build. Те же команды работают из web/. Node.js >=22.13, npm-пакетов
-нет. npm run dev запускает только localhost 8801 с CSP без внешней сети.
+Перед сборкой: npm --prefix web ci (официальный Supabase SDK + esbuild).
+Из корня: npm run check; npm test; npm run build. Те же команды работают из web/.
+Node.js >=22.13 нужен для сборки, не для runtime статической PWA. SQL: npm --prefix
+backend/supabase ci --ignore-scripts; npm --prefix backend/supabase test. Эти тесты
+используют локальный PGlite с синтетическими данными, не рабочую базу. npm run dev запускает только localhost 8801 с CSP без внешней сети.
 Синтетические тесты используют отдельные хранилища; не добавлять вымышленные
 записи в опубликованную базу и не импортировать реальные данные для тестов.
 
@@ -73,3 +78,14 @@ Git. GitHub Actions публикует только web/pages. GitHub Pages и G
 Использовать Chrome и vozvrat.workspace@gmail.com для серверной настройки;
 clasp --user daily, не default. backend/.clasp.json и InitialSetup.gs, private/
 и ключи не выводить и не публиковать. Ключи API не помещать во frontend.
+
+## Supabase / legacy bridge (1.9.0)
+Миграция владельца выполнена с сохранением ID/clocks/actors и erased markers.
+Google-лист владельца — frozen backup; GAS16 перенаправляет старые клиенты в
+Supabase. Kate не переносилась. Не откатывать GAS на старые Sheets-записи без
+обратного merge новых данных. Файлы/проверки: backend/supabase/README.md.
+Apps Script push ограничен backend/.claspignore тремя runtime-файлами; никогда
+не отправлять вложенные SQL/node_modules/тесты в clasp. Supabase SQL не применять
+автоматически в CI. Административные ключи — только server/private, клиентский
+publishable/anon key публичен и защищается RLS. Отправка писем — по действию
+пользователя/прямому поручению, не для фонового QA.
