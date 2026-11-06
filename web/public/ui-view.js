@@ -5,10 +5,11 @@ export function taskScheduleDate(task,byId){if(task.date)return task.date;const 
 export function taskCounts(entities){const byId=new Map(entities.map(e=>[e.id,e])),out={};for(const task of entities){if(task.kind!=='task'||task.deleted||task.done)continue;const date=taskScheduleDate(task,byId);if(date)out[date]=(out[date]||0)+1;}return out;}
 // A view projection: membership follows the existing date/project contracts.
 // Timed steps are extracted once; importance never splits a project's context.
+export const compareProjects=(a,b)=>(a.order??Infinity)-(b.order??Infinity)||(a.createdAt||0)-(b.createdAt||0)||(a.title||'').localeCompare(b.title||'','ru')||a.id.localeCompare(b.id);
 export function groupDayPlan(entities,day){
  const live=entities.filter(e=>!e.deleted),byId=new Map(live.map(e=>[e.id,e]));
  const compare=(a,b)=>(a.order??Infinity)-(b.order??Infinity)||(a.createdAt||0)-(b.createdAt||0)||a.id.localeCompare(b.id);
- const projects=live.filter(e=>e.kind==='project').sort((a,b)=>(a.order??Infinity)-(b.order??Infinity)||(a.createdAt||0)-(b.createdAt||0)||(a.title||'').localeCompare(b.title||'','ru')||a.id.localeCompare(b.id)),projectIds=new Set(projects.map(p=>p.id));
+ const projects=live.filter(e=>e.kind==='project').sort(compareProjects),projectIds=new Set(projects.map(p=>p.id));
  const projectId=e=>{const id=e.projectId||byId.get(e.goalId)?.projectId||'';return projectIds.has(id)?id:'';};
  const blocks=live.filter(e=>e.kind==='goal'&&!e.closed&&e.date===day),blockIds=new Set(blocks.map(g=>g.id));
  const tasks=live.filter(e=>e.kind==='task'&&!e.done&&taskScheduleDate(e,byId)===day);

@@ -575,3 +575,10 @@ html.sheet-open{overflow:hidden}
 #daily .day-group>.heading>span{white-space:nowrap}
 #daily .day-group .day-sheet>.planned-block{margin:0}
 #daily .block-timed-hint{padding:0 0 10px;font-size:12px;line-height:1.5;color:var(--quiet)}
+
+/* Project order controls share the normal action geometry. */
+#daily .project-item{min-width:0;display:flex;flex-direction:column;gap:8px}
+#daily .project-item .project-tile{width:100%;flex:1}
+#daily .project-order-controls{display:flex;gap:8px}
+#daily .project-order-controls button{flex:1;min-height:44px}
+#daily .project-order-controls svg{transform:rotate(90deg)}

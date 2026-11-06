@@ -24,3 +24,13 @@ test('legacy cross-project task links stay visible once under their effective pr
  const groups=groupDayPlan([p('A'),p('B'),g('block',{projectId:'A'}),t('legacy',{goalId:'block',projectId:'B'}),t('inheritedTimed',{goalId:'block',date:'',time:'10:00'})],day);
  assert.deepEqual(shown(groups).sort(),['inheritedTimed','legacy']);assert.equal(groups.find(g=>g.title==='B').count,1);assert.equal(groups.find(g=>g.title==='A').items[0].timedCount,1);
 });
+
+ test('project ordering is identical in project list and day groups, including legacy and new projects',async()=>{
+ const {compareProjects}=await import('../public/ui-view.js');
+ const projects=[{id:'project_a',kind:'project',title:'MOST',createdAt:1},{id:'project_b',kind:'project',title:'VZVRT',createdAt:2},{id:'project_c',kind:'project',title:'daily',createdAt:3}];
+ const entities=[...projects,...projects.map((p,i)=>({id:'task_'+i,kind:'task',projectId:p.id,date:'2026-11-06'}))];
+ assert.deepEqual(groupDayPlan(entities,'2026-11-06').map(g=>g.key),projects.toSorted(compareProjects).map(p=>p.id));
+ projects[1].order=1;projects[2].order=2;projects[0].order=3;
+ assert.deepEqual(groupDayPlan(entities,'2026-11-06').map(g=>g.key),['project_b','project_c','project_a']);
+ assert.deepEqual(projects.toSorted(compareProjects).map(p=>p.id),['project_b','project_c','project_a']);
+ });
