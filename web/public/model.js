@@ -13,6 +13,11 @@ export function dayView(tasks,day,today=dayKey()){return{
  done:tasks.filter(t=>!t.deleted&&t.done&&(t.completedDate===day||(t.date===day&&t.completedDate&&t.completedDate<t.date))).sort((a,b)=>(b.completedAt||0)-(a.completedAt||0)),
  queue:tasks.filter(t=>!t.deleted&&!t.done&&!t.date)
 };}
+export function rescheduleBlockTasks(block,tasks,date){
+ if(!block?.date||block.date===date)return [];
+ return tasks.filter(t=>!t.deleted&&!t.done&&t.goalId===block.id&&(date?t.date&&t.date!==date:t.date||t.time))
+  .map(t=>({id:t.id,kind:'task',patch:date?{date}:{date:'',time:''}}));
+}
 export function goalProgress(goal,tasks){const list=tasks.filter(t=>!t.deleted&&t.goalId===goal.id),done=list.filter(t=>t.done).length;return{done,total:list.length,ready:list.length>0&&done===list.length&&!goal.closed};}
 export function periodRange(period,day){if(period==='day')return{start:day,end:day,previousStart:addDays(day,-1),previousEnd:addDays(day,-1)};if(period==='week'){const start=weekStart(day);return{start,end:addDays(start,6),previousStart:addDays(start,-7),previousEnd:addDays(start,-1)};}const[y,m]=day.split('-').map(Number);return{start:dayKey(new Date(y,m-1,1)),end:dayKey(new Date(y,m,0)),previousStart:dayKey(new Date(y,m-2,1)),previousEnd:dayKey(new Date(y,m-1,0))};}
 export function statistics(tasks,goals,range,entities){const inside=(date,start,end)=>date&&date>=start&&date<=end;const done=tasks.filter(t=>!t.deleted&&t.done&&inside(t.completedDate,range.start,range.end)),previous=tasks.filter(t=>!t.deleted&&t.done&&inside(t.completedDate,range.previousStart,range.previousEnd)).length,distribution={};done.forEach(t=>{const p=effectiveProject(t,entities);distribution[p]=(distribution[p]||0)+1;});return{done,previous,distribution,closed:goals.filter(g=>!g.deleted&&g.closed&&inside(g.closedDate,range.start,range.end))};}
