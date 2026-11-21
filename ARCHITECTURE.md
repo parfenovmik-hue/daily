@@ -119,3 +119,20 @@ Session refresh is SDK-managed; user profile binding and response validation
 remain app-owned. Auth callback fragments are consumed and removed from URL.
 Switching providers backs up local data and requires identity proof/confirmation.
 Full rollback caveat and operational evidence: backend/supabase/README.md.
+
+
+## День и карточки вишлиста · 21 ноября 2026
+
+Day focus — kind=day (day_YYYY-MM-DD), тот же IndexedDB/Lamport/undo pipeline.
+Новый RPC daily_sync_v2 возвращает day вместе с остальными сущностями.
+Совместимый v1 скрывает day от старых validators; данные остаются на сервере.
+GAS17+ выбирает service-only legacy v2 по supportsDays. UI применяет фокус
+как проекцию сортировки, без перезаписи порядка проектов/задач.
+
+Supabase Edge Function wish-card валидирует текущий Auth token через /user,
+проверяет active member и квоту через RPC, читает HTTPS HTML/JSON-LD/OpenGraph.
+Проверяются DNS, redirects, тип и размер ответа; метаданные не исполняются.
+Service key используется только для закрытого server cache. Публичный endpoint
+не получает административных полномочий от frontend. Legacy wish-card читает
+те же базовые поля через GAS. ИИ/сравнение цен/браузерный VPS fallback в этом
+проходе не подключены, существующий прототип VPS остаётся отдельным этапом.

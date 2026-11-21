@@ -102,3 +102,29 @@ by owner sync after cutover. Hourly retention remains for other GAS accounts.
 Supabase email/password client and locally bundled SDK preserve existing
 IndexedDB profile on verified identity match, otherwise open a separate profile.
 Pending edits keep their original clocks/actors, purged markers remain final.
+
+
+## Проект дня и вишлист · 21 ноября 2026
+
+Перед изменением схемы сохранён закрытый snapshot public.daily_records:
+private/supabase-admin/before-day-features-20261121.json. Пользовательские
+записи не переписываются миграциями.
+
+202611210001_day_focus добавляет kind=day с детерминированным ID day_YYYY-MM-DD,
+полями date/title/projectId и прежними Lamport cells. Клиенты нового выпуска
+используют daily_sync_v2; старый daily_sync скрывает новый тип от старых
+строгих validators. GAS выбирает daily_legacy_sync_v2 только при supportsDays.
+Старый маршрут продолжает синхронизировать прежние сущности. Порядок и IDs
+существующих записей, таблицы пользователей и права RLS сохраняются.
+
+202611210002_wishlist_fetch добавляет закрытые по владельцам cache/quota для
+Edge Function wish-card. Пользователь подтверждается Auth, доступ — active
+daily_members. Кэш 6 часов, максимум 20 незакэшированных запросов в UTC-сутки.
+Сервисный ключ остаётся в окружении Edge Function. Старые кэши удаляются
+через действующую hourly retention-функцию спустя 48 часов. Сервер получает
+только явно указанный URL, переадресации и адреса изображений проверяются.
+Вызовов ИИ и расхода OpenAI/Anthropic в новом Supabase-обработчике нет.
+
+Откат frontend к 1.9.1 допустим: v1 RPC продолжает работать. Новые day records
+нельзя удалять для отката; вернувшийся новый клиент должен получить их снова.
+Прежний GAS deployment обновляется на месте, без смены URL/таблицы.

@@ -1,0 +1,92 @@
+import assert from 'node:assert/strict';
+import {chromium} from '../../../services/browser-loader/node_modules/playwright/index.mjs';
+const browser=await chromium.launch({channel:'chrome'});
+const context=await browser.newContext({viewport:{width:440,height:956},isMobile:true,hasTouch:true,timezoneId:'Europe/Moscow'});
+const page=await context.newPage(),errors=[];
+page.on('pageerror',e=>errors.push(e.message));
+try{
+ await page.goto('http://127.0.0.1:8813/');
+ await page.evaluate(async()=>{
+  const {DailyStore}=await import('/store.js'),{dayKey,addDays}=await import('/model.js');
+  const account='day_features_qa_'+crypto.randomUUID();localStorage.setItem('daily-local-account',account);
+  const s=await new DailyStore(account).load(),day=dayKey();
+  s.patch('project_a','project',{title:'MOST',color:'petrol',order:1,createdAt:1});
+  s.patch('project_b','project',{title:'Daily',color:'blue',order:2,createdAt:2});
+  s.patch('task_time','task',{title:'Созвон',projectId:'project_a',date:day,time:'10:00',createdAt:1720000000000});
+  s.patch('task_a','task',{title:'Написать текст',projectId:'project_a',date:day,createdAt:1720000000000});
+  s.patch('task_b','task',{title:'Проверить обновление',projectId:'project_b',date:day,important:true,flag:'diamond',createdAt:1720000000000});
+  s.patch('task_past','task',{title:'Важное вчера',date:addDays(day,-1),important:true,createdAt:1720000000000});
+  s.patch('task_queue','task',{title:'Без даты',date:'',createdAt:1720000000000});
+  await s.persist();
+ });
+ await page.reload();await page.locator('[data-row=task_a]').waitFor();
+ await page.locator('[data-action=day-focus]').click();
+ await page.locator('[data-action=focus-project][data-id=project_b]').click();
+ await page.locator('#day-focus-form [type=submit]').click();
+ await page.waitForFunction(()=>document.querySelector('.day-focus strong')?.textContent==='Daily');
+ assert.deepEqual(await page.locator('[data-day-group]').evaluateAll(es=>es.map(e=>e.dataset.dayGroup)),['timed','project_b','project_a']);
+ assert.equal(await page.getByRole('heading',{name:'По времени',exact:true}).count(),0);
+ await page.locator('[data-row=task_b] .task-title').click();
+ assert.match(await page.locator('.task-created').first().textContent(),/Добавлено.*2024/);
+ assert.equal(await page.locator('.task-reader-actions>.primary').textContent(),'Редактировать');
+ await page.locator('[data-action=reader-edit]').click();
+ await page.locator('#entry-form textarea[name=title]').fill('Проверить обновление подробно');
+ await page.locator('#entry-form [type=submit]').click();
+ await page.locator('.reader-text').waitFor();
+ assert.match(await page.locator('.reader-text').textContent(),/подробно/);
+ await page.locator('button[data-action=sheet-cancel]').click();
+ // A left row swipe reveals flags and selection, rather than mutating importance.
+ const r=await page.locator('[data-row=task_a]').boundingBox();
+ await page.mouse.move(r.x+r.width-25,r.y+r.height/2);
+ await page.mouse.down();await page.mouse.move(r.x+20,r.y+r.height/2,{steps:8});await page.mouse.up();
+ await page.waitForTimeout(400);
+ await page.locator('[data-action=task-select][data-id=task_a]').last().click();
+ await page.locator('[data-select=task_b]').check();
+ assert.match(await page.locator('.selection-toolbar').textContent(),/Выбрано · 2/);
+ await page.locator('[data-action=selection-move]').click();
+ await page.locator('.transfer-days [data-action=move-task]').nth(1).click();
+ await page.locator('.sheet').waitFor({state:'detached'});
+ assert.equal(await page.locator('[data-row=task_a]').count(),0);
+ const tomorrow=await page.evaluate(async()=>{const {dayKey,addDays}=await import('/model.js');return addDays(dayKey(),1);});
+ await page.locator('.week [data-day="'+tomorrow+'"]').click();
+ assert.equal(await page.locator('[data-row=task_a]').count(),1);
+ assert.equal(await page.locator('[data-row=task_b]').count(),1);
+ // One card works from the grid through its reader and editor.
+ await page.locator('nav [data-action=more]').click();await page.locator('[data-action=wishes]').click();
+ await page.locator('#wish-quick textarea').fill('Подарок маме\nhttps://shop.example/product\nБелый цвет');
+ await page.locator('#wish-quick [type=submit]').click();
+ await page.locator('.wishlist-preview').click();
+ assert.match(await page.locator('.material-text').textContent(),/Белый/);
+ await page.locator('[data-action=wish-reader-edit]').click();
+ await page.locator('#wish-form input[name=productTitle]').fill('Точная модель');
+ await page.locator('#wish-form [type=submit]').click();
+ await page.locator('.reader-content .product-name').waitFor();
+ assert.match(await page.locator('.reader-content .product-name').textContent(),/Точная модель/);
+ await page.locator('button[data-action=sheet-cancel]').click();
+ for(const width of [320,440,768,1440]){
+  await page.setViewportSize({width,height:956});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'overflow at '+width);
+ }
+ await page.setViewportSize({width:440,height:956});
+ await page.locator('nav [data-action=day]').click();
+ await page.locator('[data-row=task_time] .task-title').click();
+ const head=await page.locator('.sheet-head').boundingBox();
+ await page.mouse.move(head.x+head.width/2,head.y+head.height/2);
+ await page.mouse.down();await page.mouse.move(head.x+head.width/2,head.y+head.height/2+150,{steps:10});await page.mouse.up();
+ await page.locator('.sheet').waitFor({state:'detached'});
+ await page.waitForTimeout(400);
+ // Native touch events exercise the shared downward gesture on the editor.
+ await page.locator('[data-row=task_time] .task-title').click();
+ await page.locator('[data-action=reader-edit]').click();
+ const cdp=await context.newCDPSession(page),editorHead=await page.locator('.sheet-head').boundingBox();
+ const x=editorHead.x+editorHead.width/2,y=editorHead.y+editorHead.height/2;
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
+ for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+20*i}]});
+ assert.ok(await page.locator('.sheet').evaluate(el=>{const r=el.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1;}),'panel shifts horizontally during downward swipe');
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ await page.locator('.sheet').waitFor({state:'detached'});
+ await page.waitForTimeout(400);
+ await page.screenshot({path:'output/playwright/day-features-440.png',fullPage:true});
+ assert.deepEqual(errors,[]);
+ console.log('PASS: focus order, creation date, edit/read actions, swipe selection, bulk move, wishlist read/edit, widths 320/440/768/1440.');
+}finally{await browser.close();}

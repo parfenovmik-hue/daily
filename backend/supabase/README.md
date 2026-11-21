@@ -104,3 +104,27 @@ All external API calls in that fixture are intercepted; no real auth/data/emails
 Real owner password login and standalone iPhone flow need owner confirmation.
 Rollback frontend is compatible with GAS16 bridge; do not roll backend back to
 Sheets writes after new Supabase edits without an explicit reverse-data merge.
+
+
+## 1.10.0 · day focus and basic wishlist
+
+Applied202611210001_day_focus and202611210002_wishlist_fetch. Existing client
+protocol stays1; native clients use daily_sync_v2 and legacy GAS uses
+supportsDays to select the service-only v2 bridge. Version1 hides day records.
+Do not delete day records when rolling frontend back. Keep a local backup and
+finish pending sync before reverting a device to a client with a strict schema.
+
+wish-card is deployed from backend/supabase/functions/wish-card with --use-api.
+The gateway JWT check is disabled; the handler itself verifies the supplied
+Bearer token with Supabase Auth /user and checks active membership via the
+quota RPC. Anonymous POST returns401. All authenticated requests use the
+captured user token; only the server cache write uses the service environment
+key. Neither key material nor fetched page HTML is returned in card responses.
+No paid AI calls occur in this endpoint. Default20 new fetches per UTC day per
+user,6h private cache,48h cache erasure in the existing retention job.
+Merchants may block the reader; full metadata extraction is not guaranteed.
+Legacy GAS uses the same basic sourced metadata, with its existing user quota.
+
+Local SQL tests cover both RPC versions and cross-user isolation. Edge handler
+tests mock external responses only; browser QA is synthetic and isolated.
+Authentic iPhone/PWA and real merchant links still need device verification.

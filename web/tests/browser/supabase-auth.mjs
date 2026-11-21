@@ -22,7 +22,7 @@ try{
   let result;
   if(url.pathname==='/auth/v1/token'){loginCalls++;result=session;}
   else if(url.pathname==='/auth/v1/user')result=user;
-  else if(url.pathname==='/rest/v1/rpc/daily_sync'){
+  else if(url.pathname==='/rest/v1/rpc/daily_sync_v2'){
    rpcCalls++;const changes=req.postDataJSON().changes;
    for(const r of changes){const old=records.get(r.id);records.set(r.id,{id:r.id,kind:r.kind,fields:merge(old?.fields,r.fields)});}
    result={ok:true,protocol:1,user:{id:uid,name:'QA'},records:[...records.values()],accepted:changes.map(r=>r.id),purged:[]};

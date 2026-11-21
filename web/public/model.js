@@ -1,5 +1,5 @@
-export const VERSION='1.9.1';
-export const KINDS=['task','project','goal','shopping','wish'];
+export const VERSION='1.10.0';
+export const KINDS=['task','project','goal','shopping','wish','day'];
 export function dayKey(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 export function addDays(s,n){const[y,m,d]=s.split('-').map(Number);return dayKey(new Date(y,m-1,d+n));}
 export function weekStart(s){const[y,m,d]=s.split('-').map(Number);return addDays(s,-((new Date(y,m-1,d).getDay()+6)%7));}
@@ -21,7 +21,7 @@ export function rescheduleBlockTasks(block,tasks,date){
 export function goalProgress(goal,tasks){const list=tasks.filter(t=>!t.deleted&&t.goalId===goal.id),done=list.filter(t=>t.done).length;return{done,total:list.length,ready:list.length>0&&done===list.length&&!goal.closed};}
 export function periodRange(period,day){if(period==='day')return{start:day,end:day,previousStart:addDays(day,-1),previousEnd:addDays(day,-1)};if(period==='week'){const start=weekStart(day);return{start,end:addDays(start,6),previousStart:addDays(start,-7),previousEnd:addDays(start,-1)};}const[y,m]=day.split('-').map(Number);return{start:dayKey(new Date(y,m-1,1)),end:dayKey(new Date(y,m,0)),previousStart:dayKey(new Date(y,m-2,1)),previousEnd:dayKey(new Date(y,m-1,0))};}
 export function statistics(tasks,goals,range,entities){const inside=(date,start,end)=>date&&date>=start&&date<=end;const done=tasks.filter(t=>!t.deleted&&t.done&&inside(t.completedDate,range.start,range.end)),previous=tasks.filter(t=>!t.deleted&&t.done&&inside(t.completedDate,range.previousStart,range.previousEnd)).length,distribution={};done.forEach(t=>{const p=effectiveProject(t,entities);distribution[p]=(distribution[p]||0)+1;});return{done,previous,distribution,closed:goals.filter(g=>!g.deleted&&g.closed&&inside(g.closedDate,range.start,range.end))};}
-const fields={task:['flag','order','title','projectId','goalId','date','time','important','done','completedAt','completedDate'],project:['order','title','info','symbol','color'],goal:['order','date','title','projectId','closed','closedAt','closedDate'],shopping:['title','category','done','completedAt'],wish:['notes','title','productTitle','url','image','price','currency','extra','estimated','done','completedAt','status']};
+const fields={day:['date','title','projectId'],task:['flag','order','title','projectId','goalId','date','time','important','done','completedAt','completedDate'],project:['order','title','info','symbol','color'],goal:['order','date','title','projectId','closed','closedAt','closedDate'],shopping:['title','category','done','completedAt'],wish:['notes','title','productTitle','url','image','price','currency','extra','estimated','done','completedAt','status']};
 export function validRecord(r){
  if(!r||!KINDS.includes(r.kind)||typeof r.id!=='string'||!new RegExp('^'+r.kind+'_[a-zA-Z0-9_-]{1,90}$').test(r.id)||!r.fields||typeof r.fields!=='object'||Array.isArray(r.fields))return false;
  const allowed=new Set(['createdAt','deleted',...fields[r.kind]]);if(Object.keys(r.fields).length>24)return false;
@@ -39,6 +39,21 @@ export function validRecord(r){
 
 export function dayPlan(tasks,goals,day){const blocks=goals.filter(g=>!g.deleted&&!g.closed&&g.date===day),blockIds=new Set(blocks.map(g=>g.id));const standalone=tasks.filter(t=>!t.deleted&&!t.done&&t.date===day&&(!blockIds.has(t.goalId)||t.time||t.important));const group=e=>e.kind==='goal'?2:e.time?0:e.important?1:3;const base=[...standalone,...blocks].sort((a,b)=>group(a)-group(b)||(a.time&&b.time?a.time.localeCompare(b.time):0)||(a.createdAt||0)-(b.createdAt||0)||a.id.localeCompare(b.id));if(!base.some(e=>typeof e.order==='number'))return base;return base.map((e,i)=>({e,i})).sort((a,b)=>(a.e.order??1e12+a.i)-(b.e.order??1e12+b.i)||a.i-b.i).map(x=>x.e);}
 
-// Legacy important=true has no explicit symbol and continues to display a diamond.
-export function taskFlag(task){return task?.important?(['diamond','star','flagmark'].includes(task.flag)?task.flag:'diamond'):'';}
-export function flagPatch(value){if(!['','diamond','star','flagmark'].includes(value))throw Error('Некорректное обозначение');return{important:!!value,flag:value};}
+// Old symbols are still accepted on sync; every important task is shown as a flag.
+export function taskFlag(task){return task?.important?'flagmark':'';}
+export function flagPatch(value){
+ if(!['','diamond','star','flagmark'].includes(value))throw Error('Некорректное обозначение');
+ return {important:!!value,flag:value?'flagmark':''};
+}
+export function taskTransferChanges(tasks,entities,date){
+ const byId=new Map(entities.map(e=>[e.id,e]));
+ return tasks.filter(t=>t.kind==='task'&&!t.deleted&&!t.done).map(t=>{
+  const patch={date,time:date?t.time||'':''};
+  const block=byId.get(t.goalId);
+  if(!date&&block&&!block.deleted&&!block.closed&&block.date){
+   patch.projectId=effectiveProject(t,entities);
+   patch.goalId='';
+  }
+  return {id:t.id,kind:'task',patch};
+ });
+}

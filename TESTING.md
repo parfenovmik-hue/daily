@@ -596,3 +596,24 @@ rejected400; no template/paid plan applied, email/password implemented instead.
 clasp initially included nested test dependencies and push was rejected; a
 tracked whitelist now permits only Code.gs/InitialSetup.gs/appsscript.json.
 Successful push/deploy contained only those3 runtime files.
+
+
+## Новые общие сценарии · 21 ноября 2026
+
+- check/build и 74 JS-теста, включая реальную Edge Function с подменёнными
+  внешними ответами: Auth, владелец, quota, cache, title/image/price; блокировки,
+  размер ответа и опасные URL; массовый перенос и единственный флажок.
+- PGlite выполняет обе новые SQL-миграции вместе с предыдущими: RLS, изоляция
+  пользователей, совместимость v1/v2 и legacy, quota/cache, сохранение удаления.
+- Chrome, изолированный профиль с синтетическими данными, 320/440/768/1440px:
+  проект дня поднимает нужную группу после времени; первичная дата добавления;
+  читатель→редактор→читатель, свайп влево→выбор двух→перенос; вишлист→просмотр
+  →редактирование; отсутствие горизонтального переполнения.
+- Закрытие читателя мышью и редактора native touch events через CDP проверено.
+  Обычный iPhone Safari и установленная PWA требуют проверки на устройстве.
+- Опубликованный wish-card проверен без авторизации: возвращает401, OPTIONS
+  работает. Успешный вызов от настоящего аккаунта не имитировался. Подлинный
+  HTML страницы маркетплейса может быть недоступен из Supabase/GAS, даже если
+  открывается в пользовательском браузере. Неполные карточки допускаются.
+- Браузерный сценарий: web/tests/browser/day-features.mjs, preview на8813.
+  Скриншоты сохраняются только в игнорируемом output/playwright/.

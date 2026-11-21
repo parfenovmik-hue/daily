@@ -13,18 +13,18 @@ function doPost(e) {
     if(body.action==='supabase-export')return dailySupabaseExport_(user);
     if(body.action==='supabase-migrate')return dailySupabaseMigrate_(user,body);
     if(body.action==='pair-create')return dailyJSON_(dailyPair_(user,body.key));
-    if(body.action==='wish-card'){try{return dailyJSON_({ok:true,protocol:1,user:{id:user.id,name:user.name},card:dailyWishEnrich_(user,body)});}catch(error){return dailyJSON_({ok:false,code:error.code||'WISH',error:/external_request|permission|разрешени/i.test(String(error.message))?'Владелец должен разрешить Daily внешние запросы в Google Apps Script. Запись сохранена.':error.message||'Не удалось получить данные товара.'});}}
+    if(body.action==='wish-card'){try{return dailyJSON_({ok:true,protocol:1,user:{id:user.id,name:user.name},card:dailyWishBasic_(user,body)});}catch(error){return dailyJSON_({ok:false,code:error.code||'WISH',error:/external_request|permission|разрешени/i.test(String(error.message))?'Владелец должен разрешить Daily внешние запросы в Google Apps Script. Запись сохранена.':error.message||'Не удалось получить данные товара.'});}}
     if(body.action==='hello'){const link=dailySupabaseLink_(user);return dailyJSON_({ok:true,user:{id:user.id,name:user.name},protocol:1,supabaseUserId:link&&link.userId||''});}
     const changes=body.changes||[];
     if(!Array.isArray(changes)||changes.length>100||!changes.every(dailyValidRecord_))throw Error('Некорректные записи');
     const lock=LockService.getScriptLock();if(!lock.tryLock(15000))return dailyJSON_({ok:false,code:'BUSY',error:'Сервер занят. Повторим синхронизацию.'});
     try {
-      const link=dailySupabaseLink_(user);if(link){const remote=dailySupabasePost_(link,'daily_legacy_sync',{p_owner:link.userId,p_changes:changes});if(remote.user.id!==link.userId)throw Error('Аккаунт сервера не совпадает');remote.user={id:user.id,name:user.name};remote.supabaseUserId=link.userId;return dailyJSON_(remote);}
+      const link=dailySupabaseLink_(user);if(link){const remote=dailySupabasePost_(link,body.supportsDays?'daily_legacy_sync_v2':'daily_legacy_sync',{p_owner:link.userId,p_changes:changes});if(remote.user.id!==link.userId)throw Error('Аккаунт сервера не совпадает');remote.user={id:user.id,name:user.name};remote.supabaseUserId=link.userId;return dailyJSON_(remote);}
       const sheet=dailySheet_(user),records=dailyReadRecords_(sheet),before=JSON.stringify(Array.from(records.values())),accepted=[],now=Date.now();
       for(const r of changes){const old=records.get(r.id);if(old&&old.kind!==r.kind)throw Error('Конфликт типа записи');accepted.push(r.id);if(old&&old.erasedAt)continue;const merged={id:r.id,kind:r.kind,fields:dailyMerge_(old&&old.fields||{},r.fields)};if(old&&old.retiredAt&&old.fields.deleted&&old.fields.deleted.value&&merged.fields.deleted&&merged.fields.deleted.value)merged.retiredAt=old.retiredAt;records.set(r.id,merged);}
       for(const [id,r] of records)records.set(id,dailyApplyRetention_(r,now));
       const output=Array.from(records.values());if(before!==JSON.stringify(output))dailyWriteRecords_(sheet,output);
-      return dailyJSON_({ok:true,protocol:1,user:{id:user.id,name:user.name},records:output.filter(r=>!r.erasedAt),purged:output.filter(r=>r.erasedAt).map(r=>r.id),accepted});
+      return dailyJSON_({ok:true,protocol:1,user:{id:user.id,name:user.name},records:output.filter(r=>!r.erasedAt&&(body.supportsDays||r.kind!=='day')),purged:output.filter(r=>r.erasedAt&&(body.supportsDays||r.kind!=='day')).map(r=>r.id),accepted});
     }finally{lock.releaseLock();}
   }catch(error){return dailyJSON_({ok:false,code:'SYNC',error:error.message||'Не удалось синхронизировать'});}
 }
@@ -48,9 +48,9 @@ function onOpen(){SpreadsheetApp.getUi().createMenu('Daily').addItem('Добав
 function inviteDailyUser(){const ui=SpreadsheetApp.getUi(),answer=ui.prompt('Новый пользователь Daily','Название листа и имя пользователя',ui.ButtonSet.OK_CANCEL);if(answer.getSelectedButton()!==ui.Button.OK)return;const name=answer.getResponseText().trim();if(!name)return;const id=Utilities.getUuid().replace(/-/g,''),key='daily1.'+id+'.'+Utilities.getUuid().replace(/-/g,'')+Utilities.getUuid().replace(/-/g,''),salt=Utilities.getUuid();dailyCreateUser_({id,name,salt,hash:dailyHash_(salt+':'+key)});const connection='daily-connect:'+Utilities.base64EncodeWebSafe(JSON.stringify({v:1,endpoint:ScriptApp.getService().getUrl(),key}));ui.alert('Личный код подключения для '+name,connection,ui.ButtonSet.OK);}
 
 function dailyDate_(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-const fields={task:['flag','order','title','projectId','goalId','date','time','important','done','completedAt','completedDate'],project:['order','title','info','symbol','color'],goal:['order','date','title','projectId','closed','closedAt','closedDate'],shopping:['title','category','done','completedAt'],wish:['notes','title','productTitle','url','image','price','currency','extra','estimated','done','completedAt','status']};
+const fields={day:['date','title','projectId'],task:['flag','order','title','projectId','goalId','date','time','important','done','completedAt','completedDate'],project:['order','title','info','symbol','color'],goal:['order','date','title','projectId','closed','closedAt','closedDate'],shopping:['title','category','done','completedAt'],wish:['notes','title','productTitle','url','image','price','currency','extra','estimated','done','completedAt','status']};
 function dailyValidRecord_(r){
- if(!r||!['task','project','goal','shopping','wish'].includes(r.kind)||typeof r.id!=='string'||!new RegExp('^'+r.kind+'_[a-zA-Z0-9_-]{1,90}$').test(r.id)||!r.fields||typeof r.fields!=='object'||Array.isArray(r.fields))return false;
+ if(!r||!['task','project','goal','shopping','wish','day'].includes(r.kind)||typeof r.id!=='string'||!new RegExp('^'+r.kind+'_[a-zA-Z0-9_-]{1,90}$').test(r.id)||!r.fields||typeof r.fields!=='object'||Array.isArray(r.fields))return false;
  const allowed=new Set(['createdAt','deleted',...fields[r.kind]]);if(Object.keys(r.fields).length>24)return false;
  for(const[k,c]of Object.entries(r.fields)){
   if(!allowed.has(k)||!c||!Number.isSafeInteger(c.clock)||c.clock<0||typeof c.actor!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(c.actor))return false;const v=c.value;
@@ -115,7 +115,7 @@ function dailyWishPage_(html,url){
  const meta={},images=[],products=[];
  const image=value=>{if(value&&typeof value==='object')value=value.url||value.contentUrl;const s=dailyWishUrl_(dailyWishDecode_(value),url);if(s&&!/^https:\/\/(?:[^/]+\.)?yastatic\.net(?:[/:]|$)/i.test(s)&&!images.includes(s)&&images.length<8)images.push(s);};
  String(html).replace(/<meta\b[^>]*>/gi,tag=>{const attrs={};tag.replace(/([\w:-]+)\s*=\s*(["'])([\s\S]*?)\2/g,(_,k,q,v)=>{attrs[k.toLowerCase()]=dailyWishDecode_(v);});const key=(attrs.property||attrs.name||'').toLowerCase();if(['og:title','og:description','og:image','twitter:image','product:price:amount','product:price:currency','og:price:amount','og:price:currency'].includes(key)&&attrs.content)meta[key]=attrs.content.length<=3000?attrs.content:'';return tag;});
- const walk=(v,depth)=>{if(!v||depth>12)return;if(Array.isArray(v)){v.slice(0,40).forEach(x=>walk(x,depth+1));return;}if(typeof v!=='object')return;const types=[].concat(v['@type']||[]);if(types.includes('Product')&&products.length<4){products.push({name:String(v.name||'').slice(0,300),offers:[].concat(v.offers||[]).slice(0,8).map(o=>({price:o.price,priceCurrency:o.priceCurrency,lowPrice:o.lowPrice,highPrice:o.highPrice})),sku:String(v.sku||'').slice(0,100)});[].concat(v.image||[]).forEach(image);}if(v['@graph'])walk(v['@graph'],depth+1);if(v.mainEntity)walk(v.mainEntity,depth+1);};
+ const walk=(v,depth)=>{if(!v||depth>12)return;if(Array.isArray(v)){v.slice(0,40).forEach(x=>walk(x,depth+1));return;}if(typeof v!=='object')return;const types=[].concat(v['@type']||[]);if((types.includes('Product')||types.includes('Service'))&&products.length<4){products.push({name:String(v.name||'').slice(0,300),offers:[].concat(v.offers||[]).slice(0,8).map(o=>({price:o.price,priceCurrency:o.priceCurrency,lowPrice:o.lowPrice,highPrice:o.highPrice})),sku:String(v.sku||'').slice(0,100)});[].concat(v.image||[]).forEach(image);}if(v['@graph'])walk(v['@graph'],depth+1);if(v.mainEntity)walk(v.mainEntity,depth+1);};
  String(html).replace(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi,(_,body)=>{try{walk(JSON.parse(body),0);}catch(_){}return '';});
  image(meta['og:image']);image(meta['twitter:image']);
  // Ordinary galleries often have no JSON-LD/OpenGraph image.
@@ -133,6 +133,36 @@ function dailyWishCard_(raw,page){
  return{productTitle,price:currency?price:0,currency,imageCandidates:[...(index>=0&&page.images[index]?[page.images[index]]:[]),...page.images].filter((v,i,a)=>a.indexOf(v)===i).slice(0,3)};
 }
 function dailyWishImage_(urls){for(const url of urls){try{const r=dailyWishFetch_(url);if(r.code===200&&/^image\/(jpeg|png|webp|gif|avif)(?:;|$)/i.test(r.type))return r.url;}catch(_){}}return '';}
+// Basic cards use published page metadata for both legacy and migrated devices.
+function dailyWishBasic_(user,body){
+ const url=dailyWishUrl_(body.url);
+ if(!url)throw Error('Нужна публичная HTTPS-ссылка на товар или услугу.');
+ const cache=CacheService.getScriptCache(),cacheKey='wish.basic.'+user.id+'.'+dailyHash_(url),cached=cache.get(cacheKey);
+ if(cached)return JSON.parse(cached);
+ const lock=LockService.getScriptLock();
+ if(!lock.tryLock(5000))throw Error('Попробуй получить данные чуть позже.');
+ try{
+  const props=PropertiesService.getScriptProperties(),name='daily.wish.rate.'+user.id;
+  const old=JSON.parse(props.getProperty(name)||'{}'),day=new Date().toISOString().slice(0,10),count=old.day===day?old.count:0;
+  if(count>=20)throw Error('На сегодня достигнут лимит: 20 новых карточек.');
+  props.setProperty(name,JSON.stringify({day,count:count+1}));
+ }finally{lock.releaseLock();}
+ const response=dailyWishFetch_(url);
+ const html=response.code===200?response.response.getContentText().slice(0,1000000):'';
+ if(dailyWishBlocked_(response,html)||response.code!==200)throw Error('Сайт ограничивает автоматическое чтение. Ссылка сохранена — данные можно дополнить вручную.');
+ if(!/text\/html|application\/xhtml/i.test(response.type))throw Error('Нужна ссылка на страницу товара или услуги.');
+ const page=dailyWishPage_(html,response.url),product=page.products.length===1?page.products[0]:null;
+ const offers=(product&&product.offers||[]).filter(o=>Number(o.price)>0);
+ const equal=offers.length&&offers.every(o=>Number(o.price)===Number(offers[0].price)&&o.priceCurrency===offers[0].priceCurrency);
+ const rawPrice=equal?Number(offers[0].price):(product&&product.offers.length>1?0:Number(String(page.meta['product:price:amount']||page.meta['og:price:amount']||'').replace(/\s/g,'').replace(',','.')));
+ const currency=String(equal?offers[0].priceCurrency:page.meta['product:price:currency']||page.meta['og:price:currency']||'').toUpperCase();
+ const title=String(product&&product.name||page.meta['og:title']||page.title||'').trim().slice(0,300);
+ const images=page.products.length>1?[dailyWishUrl_(page.meta['og:image'],response.url)].filter(Boolean):page.images;
+ const card={productTitle:title,image:dailyWishImage_(images.slice(0,3)),price:Number.isFinite(rawPrice)&&rawPrice>0&&rawPrice<1e10&&['RUB','EUR','USD','RSD'].includes(currency)?rawPrice:0,currency:['RUB','EUR','USD','RSD'].includes(currency)?currency:''};
+ if(!card.productTitle&&!card.image&&!card.price)throw Error('Данные по ссылке не найдены. Запись сохранена — её можно дополнить вручную.');
+ cache.put(cacheKey,JSON.stringify(card),21600);
+ return card;
+}
 function dailyWishEnrich_(user,body){
  const url=dailyWishUrl_(body.url);if(!url)throw Error('Нужна публичная HTTPS-ссылка на товар.');
  const props=PropertiesService.getScriptProperties(),key=props.getProperty('DAILY_ANTHROPIC_KEY');if(!key)throw Error('Получение данных товара ещё не настроено. Запись сохранена.');

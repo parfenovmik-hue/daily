@@ -34,3 +34,12 @@ test('legacy cross-project task links stay visible once under their effective pr
  assert.deepEqual(groupDayPlan(entities,'2026-11-06').map(g=>g.key),['project_b','project_c','project_a']);
  assert.deepEqual(projects.toSorted(compareProjects).map(p=>p.id),['project_b','project_c','project_a']);
  });
+
+test('Day focus promotes its project after chronological tasks without changing saved project order',()=>{
+ const projects=[p('A',{order:1}),p('B',{order:2})];
+ const entities=[...projects,t('timeA',{projectId:'A',time:'10:00'}),t('timeB',{projectId:'B',time:'09:00'}),t('a',{projectId:'A'}),g('block',{projectId:'B'}),t('b',{goalId:'block',date:''})];
+ assert.deepEqual(groupDayPlan(entities,day,'B').map(g=>g.key),['timed','B','A']);
+ assert.deepEqual(groupDayPlan(entities,day,'B')[0].items.map(i=>i.entity.id),['timeB','timeA']);
+ assert.deepEqual(groupDayPlan(entities,day,'unknown').map(g=>g.key),['timed','A','B']);
+ assert.deepEqual(projects.map(p=>p.order),[1,2]);
+});

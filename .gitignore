@@ -16,3 +16,7 @@ coverage/
 
 # Supabase CLI local cache (project linkage is not a migration)
 /supabase/.temp/
+
+# Local browser QA artifacts and CLI linkage
+/output/playwright/
+/backend/supabase/.temp/
