@@ -136,3 +136,11 @@ Service key используется только для закрытого serv
 не получает административных полномочий от frontend. Legacy wish-card читает
 те же базовые поля через GAS. ИИ/сравнение цен/браузерный VPS fallback в этом
 проходе не подключены, существующий прототип VPS остаётся отдельным этапом.
+
+
+inProgress — optional task boolean, UI по умолчанию false. Сохранение и undo
+идут через существующий perform/atomicStoreMutation. Task completion сбрасывает
+поле, отмена восстанавливает. Native syncv3 возвращает полную схему; v1/v2
+выдают совместимое представление без inProgress. GAS использует supportsProgress
+и service-only legacyv3; старые ответы также скрывают поле. Миграция
+202611210003_task_in_progress не изменяет значения существующих записей.

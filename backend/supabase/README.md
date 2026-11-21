@@ -128,3 +128,11 @@ Legacy GAS uses the same basic sourced metadata, with its existing user quota.
 Local SQL tests cover both RPC versions and cross-user isolation. Edge handler
 tests mock external responses only; browser QA is synthetic and isolated.
 Authentic iPhone/PWA and real merchant links still need device verification.
+
+
+1.11.0 adds optional boolean task.inProgress. Native clients use daily_sync_v3;
+v1/v2 strip only this field from responses. Legacy devices use
+supportsProgress and service-only daily_legacy_sync_v3; GAS19 preserves the
+field on the server when an older device edits another property. Migration
+202611210003_task_in_progress updates validators and compatible projections
+without rewriting existing records. Rollback keeps the additive schema.

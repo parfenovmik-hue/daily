@@ -40,7 +40,7 @@ Daily — единая PWA для iOS, Android, macOS и Windows. Safari, Chrome
 Vanilla JS PWA: web/public/. Сборка: web/scripts/build-pages.mjs → web/pages/.
 Frontend опубликован на https://parfenovmik-hue.github.io/daily/.
 Backend: основной аккаунт перенесён в Supabase Auth/Postgres; backend/supabase/ —
-миграции и RLS-тесты. backend/Code.gs (GAS16) остаётся мостом для старых устройств
+миграции и RLS-тесты. backend/Code.gs (GAS19) остаётся мостом для старых устройств
 владельца и backend для ещё не перенесённой Kate. Локальный UUID не авторизация.
 Не создавать независимые записи в GAS и Supabase: для владельца источник — Supabase.
 ChatGPT Auth, Sites, Next.js, React, Cloudflare/D1 не используются. Их файлы
@@ -66,7 +66,7 @@ backend/supabase ci --ignore-scripts; npm --prefix backend/supabase test. Эти
 только в рамках задания владельца. Не менять ID, схему, Lamport-поля,
 deleted/retiredAt/erasedAt или протокол sync без плана миграции и тестов.
 До изменения действующих данных нужен backup. Схема допускает goal.date,
-goal.order, task.order, task.flag и wish.notes; не сужать validator при откате.
+goal.order, task.order, task.flag, task.inProgress и wish.notes; не сужать validator при откате.
 Подробнее: backend/MIGRATIONS.md.
 
 GitHub — один репозиторий parfenovmik-hue/daily. Исходники, backend и документы
@@ -89,3 +89,8 @@ Apps Script push ограничен backend/.claspignore тремя runtime-фа
 автоматически в CI. Административные ключи — только server/private, клиентский
 publishable/anon key публичен и защищается RLS. Отправка писем — по действию
 пользователя/прямому поручению, не для фонового QA.
+
+Актуальная задача в процессе: frontend использует native syncv3; v1/v2
+и прежние GAS-клиенты получают записи без inProgress, поле на сервере
+сохраняется. Новый GAS-клиент передаёт supportsProgress для legacyv3.
+Миграция202611210003_task_in_progress. Новую отметку не путать с важностью.

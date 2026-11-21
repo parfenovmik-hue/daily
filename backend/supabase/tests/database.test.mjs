@@ -18,6 +18,7 @@ test('PostgreSQL RLS, atomic sync, Lamport merge and irreversible retention on s
  await db.exec(await fs.readFile(new URL('../migrations/202611070003_legacy_bridge.sql',import.meta.url),'utf8'));
  await db.exec(await fs.readFile(new URL('../migrations/202611210001_day_focus.sql',import.meta.url),'utf8'));
  await db.exec(await fs.readFile(new URL('../migrations/202611210002_wishlist_fetch.sql',import.meta.url),'utf8'));
+ await db.exec(await fs.readFile(new URL('../migrations/202611210003_task_in_progress.sql',import.meta.url),'utf8'));
  await db.query('insert into auth.users(id) values($1),($2),($3)',[A,B,C]);
  await db.query("insert into public.daily_members(user_id,display_name) values($1,'A'),($2,'B')",[A,B]);
  const as=async id=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role authenticated');};
@@ -52,6 +53,16 @@ test('PostgreSQL RLS, atomic sync, Lamport merge and irreversible retention on s
  const focus={id:'day_2026-11-21',kind:'day',fields:{date:cell('2026-11-21'),title:cell('Focus'),projectId:cell('project_a')}};
  const v2=async changes=>(await db.query('select public.daily_sync_v2($1::jsonb) result',[JSON.stringify(changes)])).rows[0].result;
  assert.ok((await v2([focus])).records.some(r=>r.kind==='day'));
+ const v3=async changes=>(await db.query('select public.daily_sync_v3($1::jsonb) result',[JSON.stringify(changes)])).rows[0].result;
+ const working=task('task_work');working.fields.inProgress=cell(true);
+ assert.equal((await v3([working])).records.find(r=>r.id==='task_work').fields.inProgress.value,true);
+ for(const read of [sync,v2])assert.equal((await read([])).records.find(r=>r.id==='task_work').fields.inProgress,undefined);
+ const legacyEdit=task('task_work');legacyEdit.fields.title=cell('Edited by an old device',20);
+ await v2([legacyEdit]);
+ assert.equal((await v3([])).records.find(r=>r.id==='task_work').fields.inProgress.value,true);
+ const invalidProgress=task('task_invalid_progress');invalidProgress.fields.inProgress=cell('true');
+ await assert.rejects(v3([invalidProgress]),/Invalid record/);
+
  assert.ok(!(await sync([])).records.some(r=>r.kind==='day'));
  assert.equal((await db.query('select public.daily_wish_reserve($1) result',['https://example.com/item'])).rows[0].result.allowed,true);
  await assert.rejects(db.query('select public.daily_wish_cache_store($1,$2,$3)',[A,'https://example.com/item','{}']),/permission denied/);
@@ -59,14 +70,18 @@ test('PostgreSQL RLS, atomic sync, Lamport merge and irreversible retention on s
  await db.query('select public.daily_wish_cache_store($1,$2,$3)',[A,'https://example.com/item',JSON.stringify({productTitle:'Exact product'})]);
  const bridge=(await db.query('select public.daily_legacy_sync_v2($1) result',[A])).rows[0].result;
  assert.ok(bridge.records.some(r=>r.kind==='day'));
+ assert.equal(bridge.records.find(r=>r.id==='task_work').fields.inProgress,undefined);
+ const currentBridge=(await db.query('select public.daily_legacy_sync_v3($1) result',[A])).rows[0].result;
+ assert.equal(currentBridge.records.find(r=>r.id==='task_work').fields.inProgress.value,true);
+
  await as(A);
  assert.equal((await db.query('select public.daily_wish_reserve($1) result',['https://example.com/item'])).rows[0].result.cached.productTitle,'Exact product');
  for(let i=1;i<20;i++)assert.equal((await db.query('select public.daily_wish_reserve($1) result',['https://example.com/other'+i])).rows[0].result.allowed,true);
  assert.equal((await db.query('select public.daily_wish_reserve($1) result',['https://example.com/limit'])).rows[0].result.allowed,false);
  await assert.rejects(db.query('select * from daily_private.wish_fetch'),/permission denied/);
- await as(B);await assert.rejects(v2([]),/Invitation required/);
+ await as(B);await assert.rejects(v2([]),/Invitation required/);await assert.rejects(v3([]),/Invitation required/);
  await db.exec('reset role');await db.query('update public.daily_members set active=true where user_id=$1',[B]);await as(B);
- assert.ok(!(await v2([])).records.some(r=>r.kind==='day'));
+ assert.ok(!(await v2([])).records.some(r=>r.kind==='day'));assert.ok(!(await v3([])).records.some(r=>r.id==='task_work'));
  assert.equal((await db.query('select public.daily_wish_reserve($1) result',['https://example.com/item'])).rows[0].result.cached,undefined);
  await db.exec('reset role;set role anon');await assert.rejects(db.query("select public.daily_sync('[]')"),/permission denied/);
  }finally{await db.close();}

@@ -32,3 +32,15 @@ test('Migrated GAS clients route only their own changes to Supabase and keep leg
  assert.equal(s.post(s.b,[],'supabase-export').ok,false);
  s.context.UrlFetchApp.fetch=()=>({getResponseCode:()=>503});assert.equal(s.post(s.a).ok,false);assert.equal(s.stats().writes,0);
 });
+
+test('Task progress is boolean and survives legacy edits without leaking unsupported fields to old clients',()=>{
+ const s=server();
+ const post=(changes,supportsProgress)=>JSON.parse(s.context.doPost({postData:{contents:JSON.stringify({protocol:1,key:s.a,changes,action:'sync',supportsDays:true,supportsProgress})}}).text);
+ const working=record('work',{title:'In progress',inProgress:true});
+ assert.equal(post([working],true).records[0].fields.inProgress.value,true);
+ assert.equal(s.post(s.a).records[0].fields.inProgress,undefined);
+ s.post(s.a,[record('work',{title:'Changed by old client'},10)]);
+ assert.equal(post([],true).records[0].fields.inProgress.value,true);
+ assert.equal(post([record('bad_work',{inProgress:'true'})],true).ok,false);
+ assert.equal(post([record('work',{inProgress:false},11)],true).records[0].fields.inProgress.value,false);
+});

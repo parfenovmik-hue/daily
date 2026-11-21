@@ -10,3 +10,16 @@ test('Goal becomes ready without closing; statistics count task once and goal se
 test('Dates stay local text across months and leap years',()=>{assert.equal(addDays('2026-12-31',1),'2027-01-01');assert.equal(addDays('2028-02-28',1),'2028-02-29');assert.equal(periodRange('month','2026-01-20').previousStart,'2025-12-01');});
 test('Durable store restores pending edits and merges another device without losing local fields',async()=>{const map=new Map(),adapter={read:async k=>structuredClone(map.get(k)),write:async(k,v)=>map.set(k,structuredClone(v))};const a=await new DailyStore('test',adapter).load(),id=a.create('task',{title:'Test',date:'2026-11-02',done:false});await a.persist();const restored=await new DailyStore('test',adapter).load();assert.equal(restored.get(id).title,'Test');assert.ok(restored.dirty[id]);restored.patch(id,'task',{important:true});const other=structuredClone(a.records[id]);other.fields.date=cell('2026-11-04',restored.clock+1,'other');restored.merge([other]);assert.equal(restored.get(id).important,true);assert.equal(restored.get(id).date,'2026-11-04');const isolated=await new DailyStore('different-user',adapter).load();assert.equal(isolated.entities().length,0);});
 test('Validation rejects unsupported fields, malformed dates and executable image URLs',()=>{const r={id:'task_test',kind:'task',fields:{date:cell('2026-02-30',1)}};assert.equal(validRecord(r),false);r.fields={admin:cell(true,2)};assert.equal(validRecord(r),false);const w={id:'wish_test',kind:'wish',fields:{image:cell('javascript:alert(1)',1)}};assert.equal(validRecord(w),false);});
+
+test('An optional progress state round-trips without changing task completion or priority',async()=>{
+ const {taskInProgress,validRecord,unpack,mergeFields}=await import('../public/model.js');
+ const field=(value,clock=1)=>({value,clock,actor:'test'});
+ const legacy={id:'task_work',kind:'task',fields:{title:field('Task'),done:field(false)}};
+ assert.equal(taskInProgress(unpack(legacy)),false);
+ const working={...legacy,fields:mergeFields(legacy.fields,{inProgress:field(true)})};
+ assert.ok(validRecord(working));assert.equal(taskInProgress(unpack(working)),true);
+ assert.equal(unpack(working).done,false);
+ assert.equal(taskInProgress({...unpack(working),done:true}),false);
+ assert.equal(validRecord({...working,fields:{inProgress:field('true')}}),false);
+ assert.equal(validRecord({...working,fields:{inProgress:field(false)}}),true);
+});

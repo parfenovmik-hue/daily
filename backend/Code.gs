@@ -19,12 +19,12 @@ function doPost(e) {
     if(!Array.isArray(changes)||changes.length>100||!changes.every(dailyValidRecord_))throw Error('Некорректные записи');
     const lock=LockService.getScriptLock();if(!lock.tryLock(15000))return dailyJSON_({ok:false,code:'BUSY',error:'Сервер занят. Повторим синхронизацию.'});
     try {
-      const link=dailySupabaseLink_(user);if(link){const remote=dailySupabasePost_(link,body.supportsDays?'daily_legacy_sync_v2':'daily_legacy_sync',{p_owner:link.userId,p_changes:changes});if(remote.user.id!==link.userId)throw Error('Аккаунт сервера не совпадает');remote.user={id:user.id,name:user.name};remote.supabaseUserId=link.userId;return dailyJSON_(remote);}
+      const link=dailySupabaseLink_(user);if(link){const remote=dailySupabasePost_(link,body.supportsProgress?'daily_legacy_sync_v3':body.supportsDays?'daily_legacy_sync_v2':'daily_legacy_sync',{p_owner:link.userId,p_changes:changes});if(remote.user.id!==link.userId)throw Error('Аккаунт сервера не совпадает');remote.user={id:user.id,name:user.name};remote.supabaseUserId=link.userId;return dailyJSON_(remote);}
       const sheet=dailySheet_(user),records=dailyReadRecords_(sheet),before=JSON.stringify(Array.from(records.values())),accepted=[],now=Date.now();
       for(const r of changes){const old=records.get(r.id);if(old&&old.kind!==r.kind)throw Error('Конфликт типа записи');accepted.push(r.id);if(old&&old.erasedAt)continue;const merged={id:r.id,kind:r.kind,fields:dailyMerge_(old&&old.fields||{},r.fields)};if(old&&old.retiredAt&&old.fields.deleted&&old.fields.deleted.value&&merged.fields.deleted&&merged.fields.deleted.value)merged.retiredAt=old.retiredAt;records.set(r.id,merged);}
       for(const [id,r] of records)records.set(id,dailyApplyRetention_(r,now));
       const output=Array.from(records.values());if(before!==JSON.stringify(output))dailyWriteRecords_(sheet,output);
-      return dailyJSON_({ok:true,protocol:1,user:{id:user.id,name:user.name},records:output.filter(r=>!r.erasedAt&&(body.supportsDays||r.kind!=='day')),purged:output.filter(r=>r.erasedAt&&(body.supportsDays||r.kind!=='day')).map(r=>r.id),accepted});
+      return dailyJSON_({ok:true,protocol:1,user:{id:user.id,name:user.name},records:output.filter(r=>!r.erasedAt&&(body.supportsDays||r.kind!=='day')).map(r=>body.supportsProgress?r:{...r,fields:Object.fromEntries(Object.entries(r.fields).filter(([key])=>key!=='inProgress'))}),purged:output.filter(r=>r.erasedAt&&(body.supportsDays||r.kind!=='day')).map(r=>r.id),accepted});
     }finally{lock.releaseLock();}
   }catch(error){return dailyJSON_({ok:false,code:'SYNC',error:error.message||'Не удалось синхронизировать'});}
 }
@@ -48,13 +48,13 @@ function onOpen(){SpreadsheetApp.getUi().createMenu('Daily').addItem('Добав
 function inviteDailyUser(){const ui=SpreadsheetApp.getUi(),answer=ui.prompt('Новый пользователь Daily','Название листа и имя пользователя',ui.ButtonSet.OK_CANCEL);if(answer.getSelectedButton()!==ui.Button.OK)return;const name=answer.getResponseText().trim();if(!name)return;const id=Utilities.getUuid().replace(/-/g,''),key='daily1.'+id+'.'+Utilities.getUuid().replace(/-/g,'')+Utilities.getUuid().replace(/-/g,''),salt=Utilities.getUuid();dailyCreateUser_({id,name,salt,hash:dailyHash_(salt+':'+key)});const connection='daily-connect:'+Utilities.base64EncodeWebSafe(JSON.stringify({v:1,endpoint:ScriptApp.getService().getUrl(),key}));ui.alert('Личный код подключения для '+name,connection,ui.ButtonSet.OK);}
 
 function dailyDate_(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-const fields={day:['date','title','projectId'],task:['flag','order','title','projectId','goalId','date','time','important','done','completedAt','completedDate'],project:['order','title','info','symbol','color'],goal:['order','date','title','projectId','closed','closedAt','closedDate'],shopping:['title','category','done','completedAt'],wish:['notes','title','productTitle','url','image','price','currency','extra','estimated','done','completedAt','status']};
+const fields={day:['date','title','projectId'],task:['inProgress','flag','order','title','projectId','goalId','date','time','important','done','completedAt','completedDate'],project:['order','title','info','symbol','color'],goal:['order','date','title','projectId','closed','closedAt','closedDate'],shopping:['title','category','done','completedAt'],wish:['notes','title','productTitle','url','image','price','currency','extra','estimated','done','completedAt','status']};
 function dailyValidRecord_(r){
  if(!r||!['task','project','goal','shopping','wish','day'].includes(r.kind)||typeof r.id!=='string'||!new RegExp('^'+r.kind+'_[a-zA-Z0-9_-]{1,90}$').test(r.id)||!r.fields||typeof r.fields!=='object'||Array.isArray(r.fields))return false;
  const allowed=new Set(['createdAt','deleted',...fields[r.kind]]);if(Object.keys(r.fields).length>24)return false;
  for(const[k,c]of Object.entries(r.fields)){
   if(!allowed.has(k)||!c||!Number.isSafeInteger(c.clock)||c.clock<0||typeof c.actor!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(c.actor))return false;const v=c.value;
-  if(['deleted','important','done','closed','estimated'].includes(k)){if(typeof v!=='boolean')return false;}
+  if(['deleted','important','inProgress','done','closed','estimated'].includes(k)){if(typeof v!=='boolean')return false;}
   else if(['createdAt','completedAt','closedAt','price','extra','order'].includes(k)){if(typeof v!=='number'||!Number.isFinite(v)||v<0)return false;}
   else if(typeof v!=='string'||v.length>(k==='info'?50000:['title','notes'].includes(k)?12000:3000))return false;
   if(['date','completedDate','closedDate'].includes(k)&&v){if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;const[y,m,d]=v.split('-').map(Number);if(dailyDate_(new Date(y,m-1,d))!==v)return false;}

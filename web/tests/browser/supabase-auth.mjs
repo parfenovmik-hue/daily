@@ -22,7 +22,7 @@ try{
   let result;
   if(url.pathname==='/auth/v1/token'){loginCalls++;result=session;}
   else if(url.pathname==='/auth/v1/user')result=user;
-  else if(url.pathname==='/rest/v1/rpc/daily_sync_v2'){
+  else if(url.pathname==='/rest/v1/rpc/daily_sync_v3'){
    rpcCalls++;const changes=req.postDataJSON().changes;
    for(const r of changes){const old=records.get(r.id);records.set(r.id,{id:r.id,kind:r.kind,fields:merge(old?.fields,r.fields)});}
    result={ok:true,protocol:1,user:{id:uid,name:'QA'},records:[...records.values()],accepted:changes.map(r=>r.id),purged:[]};
@@ -37,9 +37,9 @@ try{
  await page.setViewportSize({width:440,height:956});await page.waitForTimeout(300);await page.screenshot({path:'/tmp/daily-email-login.png'});
  await page.locator('#supabase-login [name=email]').fill('qa@example.test');await page.locator('#supabase-login [name=password]').fill('synthetic-password');await page.locator('#supabase-login [type=submit]').click();
  await page.locator('[data-action=cloud-apply]').waitFor();await page.locator('[data-action=cloud-apply]').click();await page.locator('[data-action=day]').click();await page.locator('[data-row=task_qa]').waitFor();
- await context.setOffline(true);await page.locator('nav [data-action=add]').click();await page.locator('#entry-form [name=title]').fill('Offline synthetic task');await page.locator('#entry-form [type=submit]').click();await page.getByText('Offline synthetic task',{exact:true}).waitFor();
+ await context.setOffline(true);await page.locator('[data-row=task_qa] .task-progress').click();await page.locator('[data-row=task_qa] .task-progress[aria-pressed=true]').waitFor();await page.locator('nav [data-action=add]').click();await page.locator('#entry-form [name=title]').fill('Offline synthetic task');await page.locator('#entry-form [type=submit]').click();await page.getByText('Offline synthetic task',{exact:true}).waitFor();
  await context.setOffline(false);await page.waitForFunction(()=>!document.querySelector('#sync')?.textContent.includes('На устройстве'),null,{timeout:10000});
- await page.waitForTimeout(1000);if(![...records.values()].some(r=>r.fields.title?.value==='Offline synthetic task'))throw Error('Offline edit not uploaded');
+ await page.waitForTimeout(1000);if(![...records.values()].some(r=>r.fields.title?.value==='Offline synthetic task'))throw Error('Offline edit not uploaded');if(records.get('task_qa').fields.inProgress?.value!==true)throw Error('Offline progress state not uploaded');
  await page.reload();await page.locator('[data-row=task_qa]').waitFor();await page.getByText('Offline synthetic task',{exact:true}).waitFor();
  await page.goto('http://127.0.0.1:8812/#access_token='+token+'&refresh_token=synthetic-refresh-token&type=recovery');await page.locator('#supabase-password').waitFor();if(new URL(page.url()).hash)throw Error('Auth tokens remained in URL');await page.locator('#supabase-password [name=password]').fill('new-synthetic-password');await page.locator('#supabase-password [type=submit]').click();await page.locator('[data-action=cloud-apply]').waitFor();await page.locator('[data-action=cloud-apply]').click();await page.waitForTimeout(500);
  const before=rpcCalls;await page.evaluate(()=>{const key='daily-supabase-auth-v1';const s=JSON.parse(localStorage.getItem(key));s.user.id='22222222-2222-4222-8222-222222222222';localStorage.setItem(key,JSON.stringify(s));});await page.reload();await page.waitForTimeout(1200);if(rpcCalls!==before)throw Error('Other account received old profile RPC');
